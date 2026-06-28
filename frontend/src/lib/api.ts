@@ -1,6 +1,8 @@
 const API_URL = typeof window !== 'undefined'
-  ? window.location.origin
-  : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001');
+  ? (window.location.hostname.endsWith('github.io')
+      ? 'https://sport-lounge-api.onrender.com'
+      : window.location.origin)
+  : (process.env.NEXT_PUBLIC_API_URL || 'https://sport-lounge-api.onrender.com');
 
 async function request<T>(path: string, options?: RequestInit, token?: string): Promise<T> {
   const headers = new Headers(options?.headers);

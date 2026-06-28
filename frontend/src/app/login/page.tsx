@@ -24,10 +24,12 @@ export default function LoginPage() {
     setLoading(true);
     setError('');
     try {
+      const isGithub = window.location.hostname.endsWith('github.io');
+      const basePath = isGithub ? '/hozwork' : '';
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/profile/`,
+          redirectTo: `${window.location.origin}${basePath}/profile/`,
         },
       });
       if (error) throw error;
