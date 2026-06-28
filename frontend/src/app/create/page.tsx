@@ -4,7 +4,8 @@ import { useRouter } from 'next/navigation';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { api } from '@/lib/api';
-import { BrandWithFlavors, Liquid, CATEGORY_LABELS } from '@/types';
+import { supabase } from '@/lib/supabase';
+import { BrandWithFlavors, Liquid } from '@/types';
 
 interface MixItem {
   flavor_id: number;
@@ -13,13 +14,17 @@ interface MixItem {
   grams: number;
 }
 
-export default function OrderPage() {
+export default function CreateOrderPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [brands, setBrands] = useState<BrandWithFlavors[]>([]);
   const [liquids, setLiquids] = useState<Liquid[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  
+  // Auth state
+  const [session, setSession] = useState<any>(null);
+  const [isAiEnabled, setIsAiEnabled] = useState(false);
 
   // Form state
   const [guestName, setGuestName] = useState('');
@@ -28,25 +33,106 @@ export default function OrderPage() {
   const [mix, setMix] = useState<MixItem[]>([]);
   const [selectedLiquid, setSelectedLiquid] = useState<number | null>(null);
   const [notes, setNotes] = useState('');
+  
+  // AI Mixologist state
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiDescription, setAiDescription] = useState('');
+  const [mixName, setMixName] = useState('');
+  const [savedMixSuccess, setSavedMixSuccess] = useState(false);
 
   useEffect(() => {
-    Promise.all([api.getFlavorsByBrand(), api.getLiquids()])
-      .then(([b, l]) => { setBrands(b); setLiquids(l); })
+    // 1. Fetch data
+    Promise.all([
+      api.getFlavorsByBrand(),
+      api.getLiquids(),
+      api.getSmartFeatures()
+    ])
+      .then(([b, l, features]) => {
+        setBrands(b);
+        setLiquids(l);
+        const aiFeature = features.find(f => f.feature_key === 'ai_mixologist');
+        setIsAiEnabled(!!aiFeature?.is_enabled);
+      })
       .catch(console.error)
       .finally(() => setLoading(false));
+
+    // 2. Auth state handling
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (session?.user?.user_metadata) {
+        setGuestName(session.user.user_metadata.full_name || session.user.user_metadata.name || '');
+      }
+    });
+
+    // 3. Check for prefilled mix from profile
+    const prefilled = localStorage.getItem('sport_lounge_prefill_mix');
+    if (prefilled) {
+      try {
+        const parsed = JSON.parse(prefilled);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setMix(parsed);
+          setStep(2); // Jump to step 2 directly
+        }
+      } catch (e) {
+        console.error(e);
+      }
+      localStorage.removeItem('sport_lounge_prefill_mix'); // Clear it
+    }
   }, []);
 
   const addToMix = (flavorId: number, name: string, brand: string) => {
     if (mix.find((m) => m.flavor_id === flavorId)) return;
     setMix([...mix, { flavor_id: flavorId, name, brand, grams: 15 }]);
+    setSavedMixSuccess(false);
   };
 
   const removeFromMix = (flavorId: number) => {
     setMix(mix.filter((m) => m.flavor_id !== flavorId));
+    setSavedMixSuccess(false);
   };
 
   const updateGrams = (flavorId: number, grams: number) => {
     setMix(mix.map((m) => m.flavor_id === flavorId ? { ...m, grams } : m));
+    setSavedMixSuccess(false);
+  };
+
+  // Generate AI Mix recommendation
+  const handleGenerateAiMix = async () => {
+    setAiLoading(true);
+    setSavedMixSuccess(false);
+    try {
+      const recommendation = await api.generateAiMix();
+      setMix(recommendation.items);
+      setAiDescription(recommendation.description);
+      setMixName(recommendation.name);
+    } catch (e: any) {
+      alert('Ошибка генерации: ' + e.message);
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  // Save current mix to profile
+  const handleSaveMixToProfile = async () => {
+    if (!session) {
+      alert('Пожалуйста, войдите в личный кабинет, чтобы сохранить микс.');
+      router.push('/login');
+      return;
+    }
+    
+    if (mix.length === 0) return;
+    
+    try {
+      const name = mixName || prompt('Введите название для вашего микса:', 'Мой микс') || 'Любимый микс';
+      await api.saveUserMix(session.access_token, {
+        name,
+        description: aiDescription || 'Пользовательский микс',
+        items: mix.map(m => ({ flavor_id: m.flavor_id, grams: m.grams }))
+      });
+      setSavedMixSuccess(true);
+    } catch (e: any) {
+      alert('Ошибка при сохранении: ' + e.message);
+    }
   };
 
   const canProceed = () => {
@@ -60,16 +146,18 @@ export default function OrderPage() {
     setSubmitting(true);
     try {
       const order = await api.createOrder({
+        user_id: session?.user?.id || undefined,
         guest_name: guestName,
         guest_phone: guestPhone || undefined,
         table_number: tableNumber ? parseInt(tableNumber) : undefined,
         liquid_id: selectedLiquid,
         notes: notes || undefined,
         items: mix.map((m) => ({ flavor_id: m.flavor_id, grams: m.grams })),
-      });
+      }, session?.access_token || undefined);
+      
       router.push(`/track?id=${order.id}`);
     } catch (e: any) {
-      alert('Ошибка: ' + e.message);
+      alert('Ошибка создания заказа: ' + e.message);
     } finally {
       setSubmitting(false);
     }
@@ -117,7 +205,15 @@ export default function OrderPage() {
               {/* Step 1: Guest Info */}
               {step === 1 && (
                 <div className="card p-8 animate-fade-in">
-                  <h2 className="text-xl font-semibold mb-6" style={{ color: 'var(--gold-light)' }}>Ваши данные</h2>
+                  <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-xl font-semibold" style={{ color: 'var(--gold-light)' }}>Ваши данные</h2>
+                    {!session && (
+                      <button onClick={() => router.push('/login')} className="text-xs px-3 py-1.5 rounded-lg btn-outline cursor-pointer">
+                        🔑 Войти через Google
+                      </button>
+                    )}
+                  </div>
+                  
                   <div className="flex flex-col gap-5">
                     <div>
                       <label className="block text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>Имя *</label>
@@ -138,10 +234,43 @@ export default function OrderPage() {
               {/* Step 2: Mix Builder */}
               {step === 2 && (
                 <div className="animate-fade-in">
-                  <div className="card p-6 mb-6">
-                    <h2 className="text-xl font-semibold mb-2" style={{ color: 'var(--gold-light)' }}>Составьте микс</h2>
-                    <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Выберите вкусы и настройте пропорции</p>
+                  <div className="card p-6 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                      <h2 className="text-xl font-semibold mb-1" style={{ color: 'var(--gold-light)' }}>Составьте микс</h2>
+                      <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Выберите вкусы табака и настройте веса</p>
+                    </div>
+
+                    {isAiEnabled && (
+                      <button
+                        onClick={handleGenerateAiMix}
+                        disabled={aiLoading}
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold border-none cursor-pointer transition-all duration-300 btn-gold animate-glow text-xs"
+                      >
+                        {aiLoading ? '⏳ Смешиваем...' : '🤖 ИИ-миксолог'}
+                      </button>
+                    )}
                   </div>
+
+                  {aiDescription && (
+                    <div className="card p-5 mb-6" style={{ background: 'rgba(212,165,116,0.06)', border: '1px dashed var(--gold)' }}>
+                      <h4 className="text-xs uppercase tracking-wider mb-2" style={{ color: 'var(--gold)' }}>💡 Рекомендация ИИ: {mixName}</h4>
+                      <p className="text-xs leading-relaxed" style={{ color: 'var(--text-primary)' }}>{aiDescription}</p>
+                      
+                      <div className="flex gap-2 mt-4">
+                        <button
+                          onClick={handleSaveMixToProfile}
+                          disabled={savedMixSuccess}
+                          className="text-xs px-3 py-1.5 rounded-lg border-none cursor-pointer font-medium"
+                          style={{
+                            background: savedMixSuccess ? 'rgba(74,222,128,0.1)' : 'var(--gold)',
+                            color: savedMixSuccess ? 'var(--success)' : '#0a0a0a'
+                          }}
+                        >
+                          {savedMixSuccess ? '✓ Сохранено в профиль' : '💾 Сохранить микс'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
 
                   {loading ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -285,9 +414,17 @@ export default function OrderPage() {
             {/* Sidebar: Mix Preview */}
             <div className="lg:col-span-1">
               <div className="card p-6 sticky top-24">
-                <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--gold-light)', fontFamily: "'Playfair Display', serif" }}>
-                  🍃 Ваш микс
-                </h3>
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold" style={{ color: 'var(--gold-light)', fontFamily: "'Playfair Display', serif" }}>
+                    🍃 Ваш микс
+                  </h3>
+                  {mix.length > 0 && (
+                    <button onClick={handleSaveMixToProfile} className="text-xs border-none cursor-pointer" style={{ background: 'transparent', color: 'var(--gold)' }}>
+                      💾 Сохранить
+                    </button>
+                  )}
+                </div>
+                
                 {mix.length === 0 ? (
                   <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Добавьте вкусы для составления микса</p>
                 ) : (

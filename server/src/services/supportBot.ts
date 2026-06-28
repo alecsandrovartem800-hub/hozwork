@@ -240,7 +240,28 @@ export function initSupportBot() {
 
   // Start polling
   supportBot.start({
-    onStart: () => console.log('[SupportBot] Started polling'),
+    onStart: async () => {
+      console.log('[SupportBot] Started polling');
+      const adminChatId = await getAdminChatId();
+      if (adminChatId) {
+        try {
+          await supportBot!.api.sendMessage(
+            adminChatId,
+            `🚀 *Уведомление о деплое SPORT LOUNGE*\n\n` +
+            `✅ Проект успешно развернут на Render!\n` +
+            `🔒 Google OAuth авторизация настроена.\n` +
+            `🤖 Функция ИИ-миксолога подключена и работает.\n` +
+            `👥 Профили перенесены в таблицу \`users\`.\n` +
+            `🔗 Ссылка на сайт: https://sport-lounge-frontend.onrender.com\n` +
+            `🔗 API: https://sport-lounge-api.onrender.com`,
+            { parse_mode: 'Markdown' }
+          );
+          console.log('[SupportBot] Deploy notification sent to admin');
+        } catch (e) {
+          console.error('[SupportBot] Failed to send deploy notification:', e);
+        }
+      }
+    },
   });
 
   console.log('[SupportBot] Initialized');

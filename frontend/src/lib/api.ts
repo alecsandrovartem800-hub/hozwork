@@ -1,10 +1,18 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
-async function request<T>(path: string, options?: RequestInit): Promise<T> {
+async function request<T>(path: string, options?: RequestInit, token?: string): Promise<T> {
+  const headers = new Headers(options?.headers);
+  headers.set('Content-Type', 'application/json');
+
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`);
+  }
+
   const res = await fetch(`${API_URL}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
     ...options,
+    headers,
   });
+
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: res.statusText }));
     throw new Error(err.error || 'API Error');
@@ -12,14 +20,13 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   return res.json();
 }
 
-// Orders
 export const api = {
   // Orders
   getOrders: (status?: string) =>
     request<{ orders: any[]; count: number }>(`/api/orders${status ? `?status=${status}` : ''}`),
   getOrder: (id: string) => request<any>(`/api/orders/${id}`),
-  createOrder: (data: any) =>
-    request<any>('/api/orders', { method: 'POST', body: JSON.stringify(data) }),
+  createOrder: (data: any, token?: string) =>
+    request<any>('/api/orders', { method: 'POST', body: JSON.stringify(data) }, token),
   updateOrderStatus: (id: string, status: string) =>
     request<any>(`/api/orders/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
   setOrderPrice: (id: string, price_tier: number) =>
@@ -56,9 +63,9 @@ export const api = {
   // Dashboard
   getDashboard: () => request<any>('/api/dashboard'),
   getClients: () => request<any[]>('/api/dashboard/clients'),
-  setClientPrice: (id: string, price_tier: number) =>
+  setClientPrice: (id: string, personal_price: number) =>
     request<any>(`/api/dashboard/clients/${id}/price`, {
-      method: 'PATCH', body: JSON.stringify({ price_tier }),
+      method: 'PATCH', body: JSON.stringify({ personal_price }),
     }),
 
   // Atmosphere
@@ -75,4 +82,16 @@ export const api = {
 
   // Liquids
   getLiquids: () => request<any[]>('/api/liquids'),
+
+  // Users Auth & Profile (Express proxy API)
+  getCurrentUser: (token: string) => request<any>('/api/users/me', { method: 'GET' }, token),
+  getUserOrders: (token: string) => request<any[]>('/api/users/me/orders', { method: 'GET' }, token),
+  getUserMixes: (token: string) => request<any[]>('/api/users/me/mixes', { method: 'GET' }, token),
+  saveUserMix: (token: string, data: any) =>
+    request<any>('/api/users/me/mixes', { method: 'POST', body: JSON.stringify(data) }, token),
+  deleteUserMix: (token: string, id: number) =>
+    request<any>(`/api/users/me/mixes/${id}`, { method: 'DELETE' }, token),
+
+  // AI Mixologist
+  generateAiMix: () => request<any>('/api/ai/mix', { method: 'GET' }),
 };

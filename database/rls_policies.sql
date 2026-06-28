@@ -3,7 +3,7 @@
 -- ============================================
 
 -- Enable RLS on all tables
-ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.masters ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.tobacco_brands ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.tobacco_flavors ENABLE ROW LEVEL SECURITY;
@@ -15,40 +15,42 @@ ALTER TABLE public.atmosphere_settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.smart_features ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.support_messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.kpi_snapshots ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.user_mixes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.user_mix_items ENABLE ROW LEVEL SECURITY;
 
 -- Helper function to check admin role
 CREATE OR REPLACE FUNCTION public.is_admin()
 RETURNS BOOLEAN AS $$
 BEGIN
     RETURN EXISTS (
-        SELECT 1 FROM public.profiles
+        SELECT 1 FROM public.users
         WHERE id = auth.uid() AND role = 'admin'
     );
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- ============================================
--- PROFILES
+-- USERS
 -- ============================================
 CREATE POLICY "Users can view own profile"
-    ON public.profiles FOR SELECT
+    ON public.users FOR SELECT
     USING (auth.uid() = id);
 
 CREATE POLICY "Admins can view all profiles"
-    ON public.profiles FOR SELECT
+    ON public.users FOR SELECT
     USING (public.is_admin());
 
 CREATE POLICY "Users can update own profile"
-    ON public.profiles FOR UPDATE
+    ON public.users FOR UPDATE
     USING (auth.uid() = id)
     WITH CHECK (auth.uid() = id);
 
 CREATE POLICY "Admins can update all profiles"
-    ON public.profiles FOR UPDATE
+    ON public.users FOR UPDATE
     USING (public.is_admin());
 
-CREATE POLICY "Service role full access profiles"
-    ON public.profiles FOR ALL
+CREATE POLICY "Service role full access users"
+    ON public.users FOR ALL
     USING (auth.role() = 'service_role');
 
 -- ============================================
@@ -126,9 +128,9 @@ CREATE POLICY "Anyone can create orders"
     ON public.orders FOR INSERT
     WITH CHECK (true);
 
-CREATE POLICY "Anyone can view own orders by telegram"
+CREATE POLICY "Users can view own orders"
     ON public.orders FOR SELECT
-    USING (true);
+    USING (auth.uid() = user_id OR user_id IS NULL); -- Allow viewing if it is guest order or own order
 
 CREATE POLICY "Admins can manage all orders"
     ON public.orders FOR ALL
@@ -226,4 +228,32 @@ CREATE POLICY "Admins can view KPI"
 
 CREATE POLICY "Service role full access kpi"
     ON public.kpi_snapshots FOR ALL
+    USING (auth.role() = 'service_role');
+
+-- ============================================
+-- USER SAVED MIXES
+-- ============================================
+CREATE POLICY "Users can manage own mixes"
+    ON public.user_mixes FOR ALL
+    USING (auth.uid() = user_id);
+
+CREATE POLICY "Admins can view all user mixes"
+    ON public.user_mixes FOR SELECT
+    USING (public.is_admin());
+
+CREATE POLICY "Service role full access user_mixes"
+    ON public.user_mixes FOR ALL
+    USING (auth.role() = 'service_role');
+
+CREATE POLICY "Users can manage own mix items"
+    ON public.user_mix_items FOR ALL
+    USING (
+        EXISTS (
+            SELECT 1 FROM public.user_mixes
+            WHERE id = mix_id AND user_id = auth.uid()
+        )
+    );
+
+CREATE POLICY "Service role full access user_mix_items"
+    ON public.user_mix_items FOR ALL
     USING (auth.role() = 'service_role');

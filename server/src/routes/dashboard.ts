@@ -71,19 +71,18 @@ router.get('/', async (_req: Request, res: Response) => {
       .order('created_at', { ascending: false })
       .limit(10);
 
-    // Top flavors today
-    const { data: topFlavorsData } = await db
-      .from('order_items')
-      .select('flavor_id, grams, flavor:tobacco_flavors(name, brand:tobacco_brands(name)), order:orders!inner(created_at, status)')
-      .gte('order.created_at', `${today}T00:00:00`)
-      .eq('order.status', 'completed');
-
     // KPI history (last 7 days)
     const { data: kpiHistory } = await db
       .from('kpi_snapshots')
       .select('*')
       .order('snapshot_date', { ascending: false })
       .limit(7);
+
+    // Clients count for KPI
+    const { count: totalClients } = await db
+      .from('users')
+      .select('*', { count: 'exact', head: true })
+      .eq('role', 'client');
 
     res.json({
       today: {
@@ -105,18 +104,21 @@ router.get('/', async (_req: Request, res: Response) => {
       },
       recentOrders: recentOrders || [],
       kpiHistory: kpiHistory || [],
+      clients: {
+        total: totalClients || 0,
+      }
     });
   } catch (e: any) {
     res.status(500).json({ error: e.message });
   }
 });
 
-// GET /api/dashboard/clients
+// GET /api/dashboard/clients — list all client users
 router.get('/clients', async (_req: Request, res: Response) => {
   try {
     const db = getSupabase();
     const { data, error } = await db
-      .from('profiles')
+      .from('users')
       .select('*')
       .eq('role', 'client')
       .order('total_orders', { ascending: false });
@@ -127,17 +129,17 @@ router.get('/clients', async (_req: Request, res: Response) => {
   }
 });
 
-// PATCH /api/dashboard/clients/:id/price — set client price tier
+// PATCH /api/dashboard/clients/:id/price — set client personal price
 router.patch('/clients/:id/price', async (req: Request, res: Response) => {
   try {
     const db = getSupabase();
-    const { price_tier } = req.body;
-    if (![500, 750, 1000].includes(price_tier)) {
+    const { personal_price } = req.body;
+    if (![500, 750, 1000].includes(personal_price)) {
       return res.status(400).json({ error: 'Invalid price tier' });
     }
     const { data, error } = await db
-      .from('profiles')
-      .update({ price_tier })
+      .from('users')
+      .update({ personal_price })
       .eq('id', req.params.id)
       .select()
       .single();

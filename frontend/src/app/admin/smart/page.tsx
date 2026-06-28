@@ -12,6 +12,11 @@ const FEATURE_ICONS: Record<string, string> = {
   telegram_orders: '📱',
   telegram_support: '💬',
   kpi_snapshots: '📊',
+  loyalty: '💎',
+  referrals: '🔗',
+  ai_mixologist: '🤖',
+  cookie_banner: '🍪',
+  push_notifications: '🔔',
 };
 
 export default function AdminSmartPage() {

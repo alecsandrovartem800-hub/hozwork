@@ -7,15 +7,15 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- ============================================
--- 1. PROFILES (extends auth.users)
+-- 1. USERS (extends auth.users)
 -- ============================================
-CREATE TABLE IF NOT EXISTS public.profiles (
+CREATE TABLE IF NOT EXISTS public.users (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-    full_name TEXT NOT NULL DEFAULT '',
-    phone TEXT,
+    email TEXT,
+    name TEXT NOT NULL DEFAULT '',
+    avatar TEXT,
     role TEXT NOT NULL DEFAULT 'client' CHECK (role IN ('admin', 'master', 'client')),
-    price_tier INTEGER NOT NULL DEFAULT 750 CHECK (price_tier IN (500, 750, 1000)),
-    avatar_url TEXT,
+    personal_price INTEGER NOT NULL DEFAULT 750 CHECK (personal_price IN (500, 750, 1000)),
     telegram_chat_id BIGINT,
     total_orders INTEGER NOT NULL DEFAULT 0,
     total_spent NUMERIC(10,2) NOT NULL DEFAULT 0,
@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 -- ============================================
 CREATE TABLE IF NOT EXISTS public.masters (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    profile_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+    profile_id UUID REFERENCES public.users(id) ON DELETE SET NULL, -- keeps compatibility with existing queries using profile_id
     name TEXT NOT NULL,
     status TEXT NOT NULL DEFAULT 'offline' CHECK (status IN ('free', 'busy', 'offline')),
     current_order_id UUID,
@@ -86,6 +86,7 @@ CREATE TABLE IF NOT EXISTS public.liquids (
 -- ============================================
 CREATE TABLE IF NOT EXISTS public.orders (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES public.users(id) ON DELETE SET NULL,
     guest_name TEXT NOT NULL,
     guest_phone TEXT,
     guest_telegram_id BIGINT,
@@ -203,10 +204,28 @@ CREATE TABLE IF NOT EXISTS public.kpi_snapshots (
 );
 
 -- ============================================
+-- 13. USER SAVED MIXES (favourite mixes)
+-- ============================================
+CREATE TABLE IF NOT EXISTS public.user_mixes (
+    id SERIAL PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    description TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.user_mix_items (
+    id SERIAL PRIMARY KEY,
+    mix_id INTEGER NOT NULL REFERENCES public.user_mixes(id) ON DELETE CASCADE,
+    flavor_id INTEGER NOT NULL REFERENCES public.tobacco_flavors(id) ON DELETE CASCADE,
+    grams NUMERIC(6,1) NOT NULL DEFAULT 10
+);
+
+-- ============================================
 -- INDEXES
 -- ============================================
-CREATE INDEX IF NOT EXISTS idx_profiles_role ON public.profiles(role);
-CREATE INDEX IF NOT EXISTS idx_profiles_telegram ON public.profiles(telegram_chat_id);
+CREATE INDEX IF NOT EXISTS idx_users_role ON public.users(role);
+CREATE INDEX IF NOT EXISTS idx_users_telegram ON public.users(telegram_chat_id);
 CREATE INDEX IF NOT EXISTS idx_masters_status ON public.masters(status);
 CREATE INDEX IF NOT EXISTS idx_tobacco_flavors_brand ON public.tobacco_flavors(brand_id);
 CREATE INDEX IF NOT EXISTS idx_tobacco_flavors_visible ON public.tobacco_flavors(is_visible);
@@ -218,6 +237,7 @@ CREATE INDEX IF NOT EXISTS idx_order_items_order ON public.order_items(order_id)
 CREATE INDEX IF NOT EXISTS idx_restock_status ON public.restock_requests(status);
 CREATE INDEX IF NOT EXISTS idx_support_telegram ON public.support_messages(telegram_user_id);
 CREATE INDEX IF NOT EXISTS idx_kpi_date ON public.kpi_snapshots(snapshot_date DESC);
+CREATE INDEX IF NOT EXISTS idx_user_mixes_user ON public.user_mixes(user_id);
 
 -- ============================================
 -- TRIGGERS
@@ -232,8 +252,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trg_profiles_updated_at
-    BEFORE UPDATE ON public.profiles
+CREATE TRIGGER trg_users_updated_at
+    BEFORE UPDATE ON public.users
     FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
 
 CREATE TRIGGER trg_tobacco_flavors_updated_at
@@ -252,15 +272,18 @@ CREATE TRIGGER trg_smart_features_updated_at
     BEFORE UPDATE ON public.smart_features
     FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
 
--- Auto-create profile on user signup
+-- Auto-create profile on user signup (updated to users table)
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-    INSERT INTO public.profiles (id, full_name, role)
+    INSERT INTO public.users (id, email, name, avatar, role, personal_price)
     VALUES (
         NEW.id,
-        COALESCE(NEW.raw_user_meta_data->>'full_name', ''),
-        'client'
+        NEW.email,
+        COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.raw_user_meta_data->>'name', ''),
+        COALESCE(NEW.raw_user_meta_data->>'avatar_url', NEW.raw_user_meta_data->>'picture', ''),
+        'client',
+        750
     );
     RETURN NEW;
 END;

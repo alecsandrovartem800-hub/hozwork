@@ -19,60 +19,39 @@ ON CONFLICT (name) DO NOTHING;
 -- ============================================
 -- TOBACCO FLAVORS
 -- ============================================
--- Darkside
 INSERT INTO public.tobacco_flavors (brand_id, name, description, category, stock_grams, min_threshold_grams) VALUES
     (1, 'Grape Core', 'Насыщенный виноград с кислинкой', 'fruity', 450, 100),
     (1, 'Supernova', 'Мятный холод с ментолом', 'mint', 300, 100),
     (1, 'Falling Star', 'Манго и маракуйя', 'exotic', 200, 100),
     (1, 'Polar Cream', 'Сливочная мята', 'mint', 350, 100),
     (1, 'Generis Raspberry', 'Спелая малина', 'berry', 180, 100),
-    (1, 'Cosmos Flower', 'Цветочный микс с жасмином', 'floral', 250, 100);
-
--- Tangiers
-INSERT INTO public.tobacco_flavors (brand_id, name, description, category, stock_grams, min_threshold_grams) VALUES
+    (1, 'Cosmos Flower', 'Цветочный микс с жасмином', 'floral', 250, 100),
     (2, 'Cane Mint', 'Легендарная мята', 'mint', 400, 100),
     (2, 'Maraschino Cherry', 'Коктейльная вишня', 'berry', 150, 100),
     (2, 'Kashmir Peach', 'Пряный персик', 'fruity', 280, 100),
-    (2, 'Orange Soda', 'Апельсиновая газировка', 'citrus', 200, 100);
-
--- Fumari
-INSERT INTO public.tobacco_flavors (brand_id, name, description, category, stock_grams, min_threshold_grams) VALUES
+    (2, 'Orange Soda', 'Апельсиновая газировка', 'citrus', 200, 100),
     (3, 'Blueberry Muffin', 'Черничный маффин', 'sweet', 500, 100),
     (3, 'Lemon Mint', 'Лимон с мятой', 'citrus', 380, 100),
     (3, 'White Gummy Bear', 'Мармеладный мишка', 'sweet', 420, 100),
-    (3, 'Tropical Punch', 'Тропический пунш', 'exotic', 300, 100);
-
--- Must Have
-INSERT INTO public.tobacco_flavors (brand_id, name, description, category, stock_grams, min_threshold_grams) VALUES
+    (3, 'Tropical Punch', 'Тропический пунш', 'exotic', 300, 100),
     (4, 'Pinkman', 'Грейпфрут, клубника, малина', 'berry', 550, 100),
     (4, 'Mango', 'Сочное манго', 'exotic', 400, 100),
     (4, 'Margarita', 'Коктейль Маргарита', 'citrus', 200, 100),
-    (4, 'Space Flavour', 'Космический микс', 'exotic', 320, 100);
-
--- Daily Hookah
-INSERT INTO public.tobacco_flavors (brand_id, name, description, category, stock_grams, min_threshold_grams) VALUES
+    (4, 'Space Flavour', 'Космический микс', 'exotic', 320, 100),
     (5, 'Клубничный Джем', 'Домашний клубничный джем', 'berry', 300, 100),
     (5, 'Дыня Кренделёк', 'Сладкая дыня с выпечкой', 'sweet', 250, 100),
-    (5, 'Личи', 'Экзотический личи', 'exotic', 180, 100);
-
--- Element
-INSERT INTO public.tobacco_flavors (brand_id, name, description, category, stock_grams, min_threshold_grams) VALUES
+    (5, 'Личи', 'Экзотический личи', 'exotic', 180, 100),
     (6, 'Pineapple', 'Спелый ананас', 'fruity', 400, 100),
     (6, 'Watermelon Holls', 'Арбуз с холодком', 'fruity', 350, 100),
     (6, 'Banana Daiquiri', 'Банановый дайкири', 'sweet', 280, 100),
-    (6, 'Kiwi', 'Сочный киви', 'fruity', 200, 100);
-
--- Spectrum
-INSERT INTO public.tobacco_flavors (brand_id, name, description, category, stock_grams, min_threshold_grams) VALUES
+    (6, 'Kiwi', 'Сочный киви', 'fruity', 200, 100),
     (7, 'Caribbean Rum', 'Карибский ром', 'classic', 300, 100),
     (7, 'Green Apple', 'Зелёное яблоко', 'fruity', 450, 100),
-    (7, 'Chocolate', 'Молочный шоколад', 'sweet', 200, 100);
-
--- BlackBurn
-INSERT INTO public.tobacco_flavors (brand_id, name, description, category, stock_grams, min_threshold_grams) VALUES
+    (7, 'Chocolate', 'Молочный шоколад', 'sweet', 200, 100),
     (8, 'Juicy Peach', 'Сочный персик', 'fruity', 380, 100),
     (8, 'Haribon', 'Жевательные мишки Haribo', 'sweet', 300, 100),
-    (8, 'Something Berry', 'Ягодный микс', 'berry', 250, 100);
+    (8, 'Something Berry', 'Ягодный микс', 'berry', 250, 100)
+ON CONFLICT (brand_id, name) DO NOTHING;
 
 -- ============================================
 -- LIQUIDS (base for hookah)
@@ -111,7 +90,12 @@ INSERT INTO public.smart_features (feature_key, label, description, is_enabled, 
     ('queue_estimation', 'Расчёт времени ожидания', 'Показывать гостям расчётное время ожидания при очереди', true, '{"avg_prep_minutes": 15}', 5),
     ('telegram_orders', 'Telegram-уведомления о заказах', 'Отправлять карточки заказов в Telegram-бот', true, '{}', 6),
     ('telegram_support', 'Telegram-поддержка', 'Принимать сообщения от гостей через Telegram-бот поддержки', true, '{}', 7),
-    ('kpi_snapshots', 'Ежедневные KPI', 'Автоматически сохранять снимок KPI каждый день в полночь', true, '{}', 8)
+    ('kpi_snapshots', 'Ежедневные KPI', 'Автоматически сохранять снимок KPI каждый день в полночь', true, '{}', 8),
+    ('loyalty', 'Система лояльности', 'Начисление кэшбэка и скидок постоянным клиентам', true, '{}', 9),
+    ('referrals', 'Реферальная программа', 'Бонусы за приглашение новых гостей', false, '{}', 10),
+    ('ai_mixologist', 'ИИ-миксолог', 'Генерация умных миксов на основе предпочтений и запасов табака', true, '{}', 11),
+    ('cookie_banner', 'Cookie-баннер', 'Отображение всплывающего cookie-уведомления при первом входе', true, '{}', 12),
+    ('push_notifications', 'Push-уведомления', 'Отправка push-уведомлений в браузер об изменении статуса заказа', false, '{}', 13)
 ON CONFLICT (feature_key) DO NOTHING;
 
 -- ============================================

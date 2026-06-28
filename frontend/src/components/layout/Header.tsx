@@ -1,18 +1,43 @@
 'use client';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
+import { supabase } from '@/lib/supabase';
 
 const NAV_ITEMS = [
   { href: '/', label: 'Главная' },
   { href: '/menu', label: 'Меню' },
-  { href: '/order', label: 'Заказать' },
+  { href: '/create', label: 'Заказать' },
   { href: '/track', label: 'Отследить' },
 ];
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
+  const [session, setSession] = useState<any>(null);
+  const [avatar, setAvatar] = useState<string | null>(null);
   const pathname = usePathname();
+
+  useEffect(() => {
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (session?.user?.user_metadata?.avatar_url) {
+        setAvatar(session.user.user_metadata.avatar_url);
+      }
+    });
+
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      if (session?.user?.user_metadata?.avatar_url) {
+        setAvatar(session.user.user_metadata.avatar_url);
+      } else {
+        setAvatar(null);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   if (pathname?.startsWith('/admin')) return null;
 
@@ -43,7 +68,28 @@ export default function Header() {
                 {item.label}
               </Link>
             ))}
-            <Link href="/admin" className="no-underline ml-4 btn-outline btn-sm" style={{ fontSize: '0.8rem' }}>
+            
+            {session ? (
+              <Link href="/profile" className="flex items-center gap-2 no-underline px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ml-4"
+                style={{
+                  color: pathname === '/profile' ? 'var(--gold)' : 'var(--text-secondary)',
+                  background: pathname === '/profile' ? 'rgba(212,165,116,0.1)' : 'transparent',
+                  border: '1px solid rgba(212,165,116,0.2)'
+                }}>
+                {avatar ? (
+                  <img src={avatar} alt="Profile" className="w-5 h-5 rounded-full" />
+                ) : (
+                  <span>👤</span>
+                )}
+                Профиль
+              </Link>
+            ) : (
+              <Link href="/login" className="no-underline ml-4 btn-gold btn-sm px-4 py-2 rounded-lg text-sm font-medium" style={{ color: '#0a0a0a' }}>
+                Войти
+              </Link>
+            )}
+
+            <Link href="/admin" className="no-underline ml-2 btn-outline btn-sm" style={{ fontSize: '0.8rem' }}>
               Админ
             </Link>
           </nav>
@@ -90,6 +136,22 @@ export default function Header() {
                 {item.label}
               </Link>
             ))}
+            
+            {session ? (
+              <Link href="/profile" onClick={() => setIsOpen(false)} className="no-underline px-4 py-3 rounded-lg text-sm font-medium transition-all text-center border-none"
+                style={{
+                  color: 'var(--gold)',
+                  background: 'rgba(212,165,116,0.1)',
+                  border: '1px solid rgba(212,165,116,0.2)'
+                }}>
+                Профиль
+              </Link>
+            ) : (
+              <Link href="/login" onClick={() => setIsOpen(false)} className="no-underline btn-gold text-center py-3 rounded-lg font-medium" style={{ color: '#0a0a0a' }}>
+                Войти
+              </Link>
+            )}
+
             <Link href="/admin" onClick={() => setIsOpen(false)} className="no-underline btn-outline btn-sm text-center mt-2">
               Админ-панель
             </Link>

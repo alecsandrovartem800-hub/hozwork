@@ -16,6 +16,8 @@ import atmosphereRouter from './routes/atmosphere';
 import smartRouter from './routes/smart';
 import dashboardRouter from './routes/dashboard';
 import liquidsRouter from './routes/liquids';
+import usersRouter from './routes/users';
+import aiRouter from './routes/ai';
 
 const app = express();
 const httpServer = createServer(app);
@@ -43,6 +45,8 @@ app.use('/api/atmosphere', atmosphereRouter);
 app.use('/api/smart', smartRouter);
 app.use('/api/dashboard', dashboardRouter);
 app.use('/api/liquids', liquidsRouter);
+app.use('/api/users', usersRouter);
+app.use('/api/ai', aiRouter);
 
 // Initialize Socket.IO
 initSocket(httpServer);

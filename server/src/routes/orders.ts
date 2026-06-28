@@ -61,12 +61,13 @@ router.get('/:id', async (req: Request, res: Response) => {
 // POST /api/orders — create new order
 router.post('/', async (req: Request, res: Response) => {
   try {
-    const { guest_name, guest_phone, guest_telegram_id, table_number, liquid_id, notes, items } = req.body;
+    const { user_id, guest_name, guest_phone, guest_telegram_id, table_number, liquid_id, notes, items } = req.body;
 
     if (!guest_name) return res.status(400).json({ error: 'guest_name is required' });
     if (!items || items.length === 0) return res.status(400).json({ error: 'items are required' });
 
     const order = await createOrder({
+      user_id,
       guest_name,
       guest_phone,
       guest_telegram_id,

@@ -4,6 +4,7 @@ import { notifyNewOrder, updateOrderMessage } from './orderBot';
 import { deductTobacco } from './tobaccoManager';
 
 interface CreateOrderInput {
+  user_id?: string;
   guest_name: string;
   guest_phone?: string;
   guest_telegram_id?: number;
@@ -21,6 +22,7 @@ export async function createOrder(input: CreateOrderInput) {
   const { data: order, error } = await db
     .from('orders')
     .insert({
+      user_id: input.user_id || null,
       guest_name: input.guest_name,
       guest_phone: input.guest_phone || null,
       guest_telegram_id: input.guest_telegram_id || null,
@@ -127,7 +129,10 @@ export async function updateOrderStatus(orderId: string, status: string, priceTi
   const db = getSupabase();
 
   const updateData: any = { status };
-  if (priceTier) updateData.price_tier = priceTier;
+  if (priceTier) {
+    updateData.price_tier = priceTier;
+    updateData.total_price = priceTier; // keep total_price in sync with price_tier
+  }
   if (status === 'completed') {
     updateData.completed_at = new Date().toISOString();
     updateData.auto_cancel_at = null;
@@ -141,6 +146,31 @@ export async function updateOrderStatus(orderId: string, status: string, priceTi
   }
 
   await db.from('orders').update(updateData).eq('id', orderId);
+
+  // If completed, update user total orders and total spent in users table
+  if (status === 'completed') {
+    const { data: order } = await db
+      .from('orders')
+      .select('user_id, total_price')
+      .eq('id', orderId)
+      .single();
+
+    if (order?.user_id) {
+      const { data: user } = await db
+        .from('users')
+        .select('total_orders, total_spent')
+        .eq('id', order.user_id)
+        .single();
+
+      await db
+        .from('users')
+        .update({
+          total_orders: (user?.total_orders || 0) + 1,
+          total_spent: (user?.total_spent || 0) + Number(order.total_price || 750),
+        })
+        .eq('id', order.user_id);
+    }
+  }
 
   // If completed or cancelled, free the master and process next in queue
   if (['completed', 'cancelled'].includes(status)) {
