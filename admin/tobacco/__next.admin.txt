@@ -1,0 +1,7 @@
+1:"$Sreact.fragment"
+2:I[34636,["/hozwork/_next/static/chunks/19mzzsk24j6ox.js","/hozwork/_next/static/chunks/21p-i82-2u343.js"],"ClientSegmentRoot"]
+3:I[62473,["/hozwork/_next/static/chunks/19mzzsk24j6ox.js","/hozwork/_next/static/chunks/21p-i82-2u343.js","/hozwork/_next/static/chunks/0i_dxnptyd_3u.js"],"default"]
+4:I[32035,["/hozwork/_next/static/chunks/19mzzsk24j6ox.js","/hozwork/_next/static/chunks/21p-i82-2u343.js"],"default"]
+5:I[91168,["/hozwork/_next/static/chunks/19mzzsk24j6ox.js","/hozwork/_next/static/chunks/21p-i82-2u343.js"],"default"]
+0:{"rsc":["$","$1","c",{"children":[[["$","script","script-0",{"src":"/hozwork/_next/static/chunks/0i_dxnptyd_3u.js","async":true}]],["$","$L2",null,{"Component":"$3","slots":{"children":["$","$L4",null,{"parallelRouterKey":"children","template":["$","$L5",null,{}]}]},"serverProvidedParams":{"params":{},"promises":["$@6"]}}]]}],"isPartial":false,"staleTime":300,"varyParams":null,"buildId":"doLTpWaXi9g20N_WZlngW"}
+6:"$0:rsc:props:children:1:props:serverProvidedParams:params"
