@@ -1,27 +1,17 @@
-import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
-import './globals.css';
-import { AuthProvider } from '@/components/providers/AuthProvider';
-
-const inter = Inter({
-  subsets: ['latin', 'cyrillic'],
-  variable: '--font-sans',
-});
+import type { Metadata } from "next";
+import "./globals.css";
 
 export const metadata: Metadata = {
-  title: 'HOZWORK — Хозяйственные товары',
-  description: 'Качественные хозяйственные товары для бизнеса и дома с залоговой системой оплаты и гарантией надежности.',
+  title: "SPORT LOUNGE — Премиум кальянная",
+  description: "SPORT LOUNGE — премиум кальянная с авторскими миксами, уютной атмосферой и лучшим сервисом. Закажите кальян онлайн.",
+  keywords: "кальянная, hookah, sport lounge, премиум кальян, кальян на заказ",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ru" className={`${inter.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col font-sans bg-white text-gray-900">
-        <AuthProvider>{children}</AuthProvider>
+    <html lang="ru">
+      <body className="antialiased">
+        {children}
       </body>
     </html>
   );

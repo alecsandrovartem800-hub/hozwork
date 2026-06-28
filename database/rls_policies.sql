@@ -1,158 +1,229 @@
 -- ============================================
--- HOZWORK — Row Level Security Policies
+-- SPORT LOUNGE — Row Level Security Policies
 -- ============================================
 
--- Включаем RLS на всех таблицах
-ALTER TABLE public.user_profiles ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
+-- Enable RLS on all tables
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.masters ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.tobacco_brands ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.tobacco_flavors ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.liquids ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.order_items ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.deposits ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.analytics_events ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.ab_tests ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.restock_requests ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.atmosphere_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.smart_features ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.support_messages ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.kpi_snapshots ENABLE ROW LEVEL SECURITY;
+
+-- Helper function to check admin role
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS BOOLEAN AS $$
+BEGIN
+    RETURN EXISTS (
+        SELECT 1 FROM public.profiles
+        WHERE id = auth.uid() AND role = 'admin'
+    );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- ============================================
--- user_profiles
+-- PROFILES
 -- ============================================
--- Пользователь видит свой профиль
 CREATE POLICY "Users can view own profile"
-  ON public.user_profiles FOR SELECT
-  USING (auth.uid() = id);
+    ON public.profiles FOR SELECT
+    USING (auth.uid() = id);
 
--- Админ видит все профили
 CREATE POLICY "Admins can view all profiles"
-  ON public.user_profiles FOR SELECT
-  USING (
-    EXISTS (SELECT 1 FROM public.user_profiles WHERE id = auth.uid() AND role = 'admin')
-  );
+    ON public.profiles FOR SELECT
+    USING (public.is_admin());
 
--- Пользователь может обновить свой профиль
 CREATE POLICY "Users can update own profile"
-  ON public.user_profiles FOR UPDATE
-  USING (auth.uid() = id);
+    ON public.profiles FOR UPDATE
+    USING (auth.uid() = id)
+    WITH CHECK (auth.uid() = id);
+
+CREATE POLICY "Admins can update all profiles"
+    ON public.profiles FOR UPDATE
+    USING (public.is_admin());
+
+CREATE POLICY "Service role full access profiles"
+    ON public.profiles FOR ALL
+    USING (auth.role() = 'service_role');
 
 -- ============================================
--- products — публичное чтение, запись только админу
+-- MASTERS
 -- ============================================
-CREATE POLICY "Anyone can view active products"
-  ON public.products FOR SELECT
-  USING (is_active = true);
+CREATE POLICY "Anyone can view masters"
+    ON public.masters FOR SELECT
+    USING (true);
 
-CREATE POLICY "Admins can manage products"
-  ON public.products FOR ALL
-  USING (
-    EXISTS (SELECT 1 FROM public.user_profiles WHERE id = auth.uid() AND role = 'admin')
-  );
+CREATE POLICY "Admins can manage masters"
+    ON public.masters FOR ALL
+    USING (public.is_admin());
 
--- ============================================
--- orders — клиент свои, админ все
--- ============================================
-CREATE POLICY "Users can view own orders"
-  ON public.orders FOR SELECT
-  USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can create own orders"
-  ON public.orders FOR INSERT
-  WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "Admins can view all orders"
-  ON public.orders FOR SELECT
-  USING (
-    EXISTS (SELECT 1 FROM public.user_profiles WHERE id = auth.uid() AND role = 'admin')
-  );
-
-CREATE POLICY "Admins can update orders"
-  ON public.orders FOR UPDATE
-  USING (
-    EXISTS (SELECT 1 FROM public.user_profiles WHERE id = auth.uid() AND role = 'admin')
-  );
+CREATE POLICY "Service role full access masters"
+    ON public.masters FOR ALL
+    USING (auth.role() = 'service_role');
 
 -- ============================================
--- order_items — привязаны к заказам
+-- TOBACCO BRANDS
 -- ============================================
-CREATE POLICY "Users can view own order items"
-  ON public.order_items FOR SELECT
-  USING (
-    EXISTS (SELECT 1 FROM public.orders WHERE id = order_id AND user_id = auth.uid())
-  );
+CREATE POLICY "Anyone can view active brands"
+    ON public.tobacco_brands FOR SELECT
+    USING (is_active = true);
 
-CREATE POLICY "Users can insert own order items"
-  ON public.order_items FOR INSERT
-  WITH CHECK (
-    EXISTS (SELECT 1 FROM public.orders WHERE id = order_id AND user_id = auth.uid())
-  );
+CREATE POLICY "Admins can view all brands"
+    ON public.tobacco_brands FOR SELECT
+    USING (public.is_admin());
 
-CREATE POLICY "Admins can view all order items"
-  ON public.order_items FOR SELECT
-  USING (
-    EXISTS (SELECT 1 FROM public.user_profiles WHERE id = auth.uid() AND role = 'admin')
-  );
+CREATE POLICY "Admins can manage brands"
+    ON public.tobacco_brands FOR ALL
+    USING (public.is_admin());
+
+CREATE POLICY "Service role full access brands"
+    ON public.tobacco_brands FOR ALL
+    USING (auth.role() = 'service_role');
 
 -- ============================================
--- deposits — привязаны к заказам
+-- TOBACCO FLAVORS
 -- ============================================
-CREATE POLICY "Users can view own deposits"
-  ON public.deposits FOR SELECT
-  USING (
-    EXISTS (SELECT 1 FROM public.orders WHERE id = order_id AND user_id = auth.uid())
-  );
+CREATE POLICY "Anyone can view visible flavors"
+    ON public.tobacco_flavors FOR SELECT
+    USING (is_visible = true);
 
-CREATE POLICY "Admins can view all deposits"
-  ON public.deposits FOR SELECT
-  USING (
-    EXISTS (SELECT 1 FROM public.user_profiles WHERE id = auth.uid() AND role = 'admin')
-  );
+CREATE POLICY "Admins can view all flavors"
+    ON public.tobacco_flavors FOR SELECT
+    USING (public.is_admin());
 
--- Service role can insert deposits (backend operation)
-CREATE POLICY "Service can insert deposits"
-  ON public.deposits FOR INSERT
-  WITH CHECK (true);
+CREATE POLICY "Admins can manage flavors"
+    ON public.tobacco_flavors FOR ALL
+    USING (public.is_admin());
 
--- ============================================
--- messages — участники чата
--- ============================================
-CREATE POLICY "Users can view messages for own orders"
-  ON public.messages FOR SELECT
-  USING (
-    EXISTS (SELECT 1 FROM public.orders WHERE id = order_id AND user_id = auth.uid())
-    OR
-    EXISTS (SELECT 1 FROM public.user_profiles WHERE id = auth.uid() AND role = 'admin')
-  );
-
-CREATE POLICY "Users can send messages for own orders"
-  ON public.messages FOR INSERT
-  WITH CHECK (
-    auth.uid() = sender_id
-    AND (
-      EXISTS (SELECT 1 FROM public.orders WHERE id = order_id AND user_id = auth.uid())
-      OR
-      EXISTS (SELECT 1 FROM public.user_profiles WHERE id = auth.uid() AND role = 'admin')
-    )
-  );
+CREATE POLICY "Service role full access flavors"
+    ON public.tobacco_flavors FOR ALL
+    USING (auth.role() = 'service_role');
 
 -- ============================================
--- analytics_events — только админ читает, все пишут
+-- LIQUIDS
 -- ============================================
-CREATE POLICY "Anyone can insert analytics events"
-  ON public.analytics_events FOR INSERT
-  WITH CHECK (true);
+CREATE POLICY "Anyone can view available liquids"
+    ON public.liquids FOR SELECT
+    USING (is_available = true);
 
-CREATE POLICY "Admins can view analytics"
-  ON public.analytics_events FOR SELECT
-  USING (
-    EXISTS (SELECT 1 FROM public.user_profiles WHERE id = auth.uid() AND role = 'admin')
-  );
+CREATE POLICY "Admins can manage liquids"
+    ON public.liquids FOR ALL
+    USING (public.is_admin());
+
+CREATE POLICY "Service role full access liquids"
+    ON public.liquids FOR ALL
+    USING (auth.role() = 'service_role');
 
 -- ============================================
--- ab_tests — все пишут, админ читает
+-- ORDERS
 -- ============================================
-CREATE POLICY "Anyone can insert ab test events"
-  ON public.ab_tests FOR INSERT
-  WITH CHECK (true);
+CREATE POLICY "Anyone can create orders"
+    ON public.orders FOR INSERT
+    WITH CHECK (true);
 
-CREATE POLICY "Admins can view ab tests"
-  ON public.ab_tests FOR SELECT
-  USING (
-    EXISTS (SELECT 1 FROM public.user_profiles WHERE id = auth.uid() AND role = 'admin')
-  );
+CREATE POLICY "Anyone can view own orders by telegram"
+    ON public.orders FOR SELECT
+    USING (true);
+
+CREATE POLICY "Admins can manage all orders"
+    ON public.orders FOR ALL
+    USING (public.is_admin());
+
+CREATE POLICY "Service role full access orders"
+    ON public.orders FOR ALL
+    USING (auth.role() = 'service_role');
+
+-- ============================================
+-- ORDER ITEMS
+-- ============================================
+CREATE POLICY "Anyone can view order items"
+    ON public.order_items FOR SELECT
+    USING (true);
+
+CREATE POLICY "Anyone can create order items"
+    ON public.order_items FOR INSERT
+    WITH CHECK (true);
+
+CREATE POLICY "Admins can manage order items"
+    ON public.order_items FOR ALL
+    USING (public.is_admin());
+
+CREATE POLICY "Service role full access order_items"
+    ON public.order_items FOR ALL
+    USING (auth.role() = 'service_role');
+
+-- ============================================
+-- RESTOCK REQUESTS
+-- ============================================
+CREATE POLICY "Admins can view restock requests"
+    ON public.restock_requests FOR SELECT
+    USING (public.is_admin());
+
+CREATE POLICY "Admins can manage restock requests"
+    ON public.restock_requests FOR ALL
+    USING (public.is_admin());
+
+CREATE POLICY "Service role full access restock"
+    ON public.restock_requests FOR ALL
+    USING (auth.role() = 'service_role');
+
+-- ============================================
+-- ATMOSPHERE SETTINGS
+-- ============================================
+CREATE POLICY "Anyone can view atmosphere"
+    ON public.atmosphere_settings FOR SELECT
+    USING (true);
+
+CREATE POLICY "Admins can manage atmosphere"
+    ON public.atmosphere_settings FOR ALL
+    USING (public.is_admin());
+
+CREATE POLICY "Service role full access atmosphere"
+    ON public.atmosphere_settings FOR ALL
+    USING (auth.role() = 'service_role');
+
+-- ============================================
+-- SMART FEATURES
+-- ============================================
+CREATE POLICY "Anyone can view smart features"
+    ON public.smart_features FOR SELECT
+    USING (true);
+
+CREATE POLICY "Admins can manage smart features"
+    ON public.smart_features FOR ALL
+    USING (public.is_admin());
+
+CREATE POLICY "Service role full access smart"
+    ON public.smart_features FOR ALL
+    USING (auth.role() = 'service_role');
+
+-- ============================================
+-- SUPPORT MESSAGES
+-- ============================================
+CREATE POLICY "Admins can view support messages"
+    ON public.support_messages FOR SELECT
+    USING (public.is_admin());
+
+CREATE POLICY "Admins can manage support messages"
+    ON public.support_messages FOR ALL
+    USING (public.is_admin());
+
+CREATE POLICY "Service role full access support"
+    ON public.support_messages FOR ALL
+    USING (auth.role() = 'service_role');
+
+-- ============================================
+-- KPI SNAPSHOTS
+-- ============================================
+CREATE POLICY "Admins can view KPI"
+    ON public.kpi_snapshots FOR SELECT
+    USING (public.is_admin());
+
+CREATE POLICY "Service role full access kpi"
+    ON public.kpi_snapshots FOR ALL
+    USING (auth.role() = 'service_role');

@@ -1,16 +1,31 @@
 services:
   - type: web
-    name: hozwork-backend
-    env: docker
-    plan: free
+    name: sport-lounge-api
+    runtime: node
     region: frankfurt
-    rootDir: backend
+    plan: free
+    buildCommand: cd server && npm ci && npm run build
+    startCommand: cd server && node dist/index.js
+    healthCheckPath: /
+    autoDeploy: true
     envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
       - key: SUPABASE_URL
-        sync: false
-      - key: SUPABASE_SERVICE_KEY
-        sync: false
+        value: https://srqmqyldxmbdjxqjevxa.supabase.co
       - key: SUPABASE_ANON_KEY
-        sync: false
-      - key: TELEGRAM_BOT_TOKEN
-        sync: false
+        value: sb_publishable_645FLyRjM_IbVrzo3fUTsw_iFoVfIay
+      - key: SUPABASE_SERVICE_KEY
+        value: YOUR_SUPABASE_SERVICE_KEY
+      - key: TELEGRAM_SUPPORT_BOT_TOKEN
+        value: YOUR_TELEGRAM_SUPPORT_BOT_TOKEN
+      - key: TELEGRAM_ORDER_BOT_TOKEN
+        value: YOUR_TELEGRAM_ORDER_BOT_TOKEN
+      - key: TELEGRAM_ADMIN_CHAT_ID
+        value: ""
+      - key: SERVER_SECRET
+        value: YOUR_SERVER_SECRET
+      - key: CORS_ORIGINS
+        value: https://sportlounge.pages.dev,https://sport-lounge.pages.dev,http://localhost:3000

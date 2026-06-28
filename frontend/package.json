@@ -1,6 +1,6 @@
 {
-  "name": "frontend",
-  "version": "0.1.0",
+  "name": "sport-lounge-frontend",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -12,11 +12,8 @@
     "@supabase/ssr": "^0.12.0",
     "@supabase/supabase-js": "^2.108.1",
     "next": "16.2.9",
-    "pg": "^8.21.0",
-    "plotly.js": "^3.6.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "react-plotly.js": "^3.0.0",
     "zustand": "^5.0.14"
   },
   "devDependencies": {
@@ -28,6 +25,6 @@
     "eslint-config-next": "16.2.9",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "vercel": "^54.11.1"
+    "wrangler": "^4.105.0"
   }
 }

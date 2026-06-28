@@ -1,197 +1,155 @@
 'use client';
-
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { createClient } from '@/lib/supabase/client';
+import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
-import { Order, OrderStatus } from '@/types';
-import { formatPrice, formatDate, getStatusLabel, getStatusColor } from '@/lib/utils';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { toast } from '@/components/ui/Toast';
+import { Order, Master, STATUS_LABELS, STATUS_EMOJI } from '@/types';
+
+const TABS = [
+  { key: '', label: 'Все' },
+  { key: 'pending', label: 'Ожидают' },
+  { key: 'assigned,preparing', label: 'В работе' },
+  { key: 'ready,serving', label: 'Готовы' },
+  { key: 'completed', label: 'Завершённые' },
+  { key: 'cancelled', label: 'Отменённые' },
+];
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
+  const [masters, setMasters] = useState<Master[]>([]);
   const [loading, setLoading] = useState(true);
-  const [downloadingId, setDownloadingId] = useState<string | null>(null);
-  const [updatingId, setUpdatingId] = useState<string | null>(null);
-  
-  const supabase = createClient();
+  const [tab, setTab] = useState('');
 
-  const fetchOrders = async () => {
-    setLoading(true);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
-      if (!token) throw new Error('Сессия не найдена');
-
-      const data = await api.orders.list(token);
-      setOrders(data.items || []);
-    } catch (error) {
-      console.error('Ошибка загрузки заказов:', error);
-      toast.error('Не удалось загрузить список заказов');
-    } finally {
-      setLoading(false);
-    }
+  const fetchData = () => {
+    Promise.all([api.getOrders(tab || undefined), api.getMasters()])
+      .then(([o, m]) => { setOrders(o.orders || []); setMasters(m); })
+      .catch(console.error)
+      .finally(() => setLoading(false));
   };
 
-  useEffect(() => {
-    fetchOrders();
-  }, []);
+  useEffect(() => { fetchData(); }, [tab]);
+  useEffect(() => { const i = setInterval(fetchData, 10000); return () => clearInterval(i); }, [tab]);
 
-  const handleStatusChange = async (orderId: string, newStatus: OrderStatus) => {
-    setUpdatingId(orderId);
+  const handleStatusChange = async (orderId: string, status: string) => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
-      if (!token) throw new Error('Сессия не найдена');
-
-      await api.orders.updateStatus(orderId, newStatus, token);
-      toast.success(`Статус заказа успешно изменен на "${getStatusLabel(newStatus)}"`);
-      
-      // Обновляем список локально
-      setOrders((prev) =>
-        prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o))
-      );
-    } catch (error: any) {
-      console.error('Ошибка изменения статуса:', error);
-      toast.error(error.message || 'Не удалось изменить статус заказа');
-    } finally {
-      setUpdatingId(null);
-    }
+      await api.updateOrderStatus(orderId, status);
+      fetchData();
+    } catch (e: any) { alert(e.message); }
   };
 
-  const handleDownloadInvoice = async (orderId: string) => {
-    setDownloadingId(orderId);
+  const handlePriceChange = async (orderId: string, price: number) => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
-      if (!token) throw new Error('Сессия не найдена');
-
-      const blob = await api.reports.invoice(orderId, token);
-      
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `invoice_${orderId.substring(0, 8)}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.parentNode?.removeChild(link);
-      window.URL.revokeObjectURL(url);
-      
-      toast.success('Накладная успешно загружена');
-    } catch (error) {
-      console.error('Ошибка накладной:', error);
-      toast.error('Не удалось загрузить накладную');
-    } finally {
-      setDownloadingId(null);
-    }
+      await api.setOrderPrice(orderId, price);
+      fetchData();
+    } catch (e: any) { alert(e.message); }
   };
-
-  const statuses: OrderStatus[] = [
-    'pending',
-    'deposit_paid',
-    'processing',
-    'shipped',
-    'delivered',
-    'completed',
-    'cancelled',
-    'refunded',
-  ];
 
   return (
-    <div className="space-y-6 animate-fade-in font-sans">
-      {/* Title */}
-      <div>
-        <h1 className="text-2xl font-black text-gray-900">Управление заказами</h1>
-        <p className="text-sm text-gray-500">Просмотр заказов, изменение статусов и скачивание товарных накладных в PDF</p>
+    <div>
+      <h1 className="text-2xl font-bold mb-6 text-gold-gradient" style={{ fontFamily: "'Playfair Display', serif" }}>
+        📦 Управление заказами
+      </h1>
+
+      {/* Tabs */}
+      <div className="flex flex-wrap gap-2 mb-6">
+        {TABS.map((t) => (
+          <button key={t.key} onClick={() => { setTab(t.key); setLoading(true); }}
+            className="px-4 py-2 rounded-lg text-sm font-medium border-none cursor-pointer transition-all"
+            style={{
+              background: tab === t.key ? 'var(--gold)' : 'rgba(255,255,255,0.04)',
+              color: tab === t.key ? '#0a0a0a' : 'var(--text-secondary)',
+            }}>
+            {t.label}
+          </button>
+        ))}
       </div>
 
-      {/* Orders List Table */}
-      <Card hoverEffect={false} className="p-0 overflow-hidden border border-gray-100 shadow-sm">
-        {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="w-10 h-10 border-4 border-green-700 border-t-transparent rounded-full animate-spin"></div>
-          </div>
-        ) : orders.length === 0 ? (
-          <div className="text-center py-16 text-gray-400">Заказы отсутствуют.</div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse bg-white">
-              <thead>
-                <tr className="bg-gray-50 text-xs font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100">
-                  <th className="px-6 py-4">№ Заказа</th>
-                  <th className="px-6 py-4">Клиент</th>
-                  <th className="px-6 py-4">Дата оформления</th>
-                  <th className="px-6 py-4 text-right">Сумма</th>
-                  <th className="px-6 py-4 text-right">Залог (30%)</th>
-                  <th className="px-6 py-4">Статус заказа</th>
-                  <th className="px-6 py-4 text-center">Действия</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 text-sm text-gray-700">
-                {orders.map((order) => (
-                  <tr key={order.id} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="px-6 py-4 font-bold text-gray-900 font-mono">
-                      #{order.id.substring(0, 8)}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-col">
-                        <span className="font-bold text-gray-900">{order.email}</span>
-                        <span className="text-xs text-gray-400 font-medium">Тел: {order.phone}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-gray-500">
-                      {formatDate(order.created_at)}
-                    </td>
-                    <td className="px-6 py-4 text-right font-black text-gray-900">
-                      {formatPrice(order.total_amount)}
-                    </td>
-                    <td className="px-6 py-4 text-right font-bold text-orange-600">
-                      {formatPrice(order.deposit_amount)}
-                    </td>
-                    <td className="px-6 py-4">
-                      {updatingId === order.id ? (
-                        <div className="w-5 h-5 border-2 border-green-700 border-t-transparent rounded-full animate-spin"></div>
-                      ) : (
-                        <select
-                          value={order.status}
-                          onChange={(e) => handleStatusChange(order.id, e.target.value as OrderStatus)}
-                          className={`bg-white border rounded-xl px-2.5 py-1 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-green-700/20 ${getStatusColor(order.status)}`}
-                        >
-                          {statuses.map((st) => (
-                            <option key={st} value={st} className="bg-white text-gray-800 font-normal">
-                              {getStatusLabel(st)}
-                            </option>
-                          ))}
-                        </select>
-                      )}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center justify-center space-x-2.5">
-                        <Link href={`/admin/chats?order_id=${order.id}`}>
-                          <Button size="sm" variant="secondary" className="cursor-pointer">
-                            💬 Чат
-                          </Button>
-                        </Link>
-                        <Button
-                          size="sm"
-                          variant="secondary"
-                          isLoading={downloadingId === order.id}
-                          onClick={() => handleDownloadInvoice(order.id)}
-                          className="cursor-pointer"
-                        >
-                          📄 Накладная
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </Card>
+      {loading && (
+        <div className="flex flex-col gap-4">
+          {[...Array(3)].map((_, i) => <div key={i} className="skeleton h-40 rounded-2xl" />)}
+        </div>
+      )}
+
+      {!loading && orders.length === 0 && (
+        <div className="card p-12 text-center">
+          <span className="text-5xl block mb-4">📭</span>
+          <p style={{ color: 'var(--text-muted)' }}>Нет заказов</p>
+        </div>
+      )}
+
+      {!loading && (
+        <div className="flex flex-col gap-4 stagger-children">
+          {orders.map((order) => (
+            <div key={order.id} className="card p-5">
+              <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
+                <div>
+                  <div className="flex items-center gap-3 mb-1">
+                    <span className="text-lg">{STATUS_EMOJI[order.status]}</span>
+                    <h3 className="text-base font-semibold">{order.guest_name}</h3>
+                    <span className={`badge badge-${order.status} text-xs`}>{STATUS_LABELS[order.status]}</span>
+                  </div>
+                  <div className="flex flex-wrap gap-3 text-xs" style={{ color: 'var(--text-muted)' }}>
+                    {order.table_number && <span>🪑 Стол {order.table_number}</span>}
+                    <span>⏰ {new Date(order.created_at).toLocaleString('ru-RU')}</span>
+                    {order.master && <span>👨‍🍳 {order.master.name}</span>}
+                  </div>
+                </div>
+
+                {/* Price tier buttons */}
+                <div className="flex items-center gap-1">
+                  {[500, 750, 1000].map((price) => (
+                    <button key={price} onClick={() => handlePriceChange(order.id, price)}
+                      className="px-3 py-1.5 rounded-lg text-xs font-medium border-none cursor-pointer transition-all"
+                      style={{
+                        background: order.price_tier === price ? 'var(--gold)' : 'rgba(255,255,255,0.04)',
+                        color: order.price_tier === price ? '#0a0a0a' : 'var(--text-muted)',
+                        border: `1px solid ${order.price_tier === price ? 'var(--gold)' : 'var(--border)'}`,
+                      }}>
+                      {price}₽
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Mix */}
+              <div className="mb-4 p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.02)' }}>
+                <div className="flex flex-wrap gap-2">
+                  {order.items?.map((item) => (
+                    <span key={item.id} className="text-xs px-2 py-1 rounded-lg" style={{ background: 'rgba(212,165,116,0.1)', color: 'var(--gold)' }}>
+                      {item.flavor?.brand?.name} {item.flavor?.name} ({item.grams}г)
+                    </span>
+                  ))}
+                  {order.liquid && (
+                    <span className="text-xs px-2 py-1 rounded-lg" style={{ background: 'rgba(96,165,250,0.1)', color: 'var(--info)' }}>
+                      {order.liquid.icon} {order.liquid.name}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex flex-wrap gap-2">
+                {order.status === 'pending' && (
+                  <>
+                    <button onClick={() => handleStatusChange(order.id, 'preparing')} className="btn-success btn-sm">✅ Подтвердить</button>
+                    <button onClick={() => handleStatusChange(order.id, 'cancelled')} className="btn-danger btn-sm">❌ Отменить</button>
+                  </>
+                )}
+                {['assigned', 'preparing'].includes(order.status) && (
+                  <>
+                    <button onClick={() => handleStatusChange(order.id, 'ready')} className="btn-success btn-sm">✅ Готов</button>
+                    <button onClick={() => handleStatusChange(order.id, 'cancelled')} className="btn-danger btn-sm">❌ Отменить</button>
+                  </>
+                )}
+                {order.status === 'ready' && (
+                  <button onClick={() => handleStatusChange(order.id, 'serving')} className="btn-success btn-sm">✨ Подан</button>
+                )}
+                {order.status === 'serving' && (
+                  <button onClick={() => handleStatusChange(order.id, 'completed')} className="btn-success btn-sm">🎉 Завершить</button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

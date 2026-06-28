@@ -1,136 +1,78 @@
-import { Product, Order, OrderStatus } from '@/types';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
-
-async function fetchBackend(endpoint: string, options: RequestInit = {}) {
-  const url = `${BACKEND_URL}${endpoint}`;
-  
-  const headers = new Headers(options.headers);
-  if (!headers.has('Content-Type') && !(options.body instanceof FormData)) {
-    headers.set('Content-Type', 'application/json');
-  }
-
-  const response = await fetch(url, {
+async function request<T>(path: string, options?: RequestInit): Promise<T> {
+  const res = await fetch(`${API_URL}${path}`, {
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
     ...options,
-    headers,
   });
-
-  if (!response.ok) {
-    let errorDetail = 'Произошла ошибка при запросе к серверу';
-    try {
-      const errJson = await response.json();
-      errorDetail = errJson.detail || errorDetail;
-    } catch {}
-    throw new Error(errorDetail);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: res.statusText }));
+    throw new Error(err.error || 'API Error');
   }
-
-  // Для PDF-файлов или других бинарных ответов
-  const contentType = response.headers.get('Content-Type');
-  if (contentType && contentType.includes('application/pdf')) {
-    return response.blob();
-  }
-
-  return response.json();
+  return res.json();
 }
 
+// Orders
 export const api = {
-  products: {
-    list: async (params: { category?: string; search?: string; sort?: string; page?: number } = {}) => {
-      const query = new URLSearchParams();
-      if (params.category) query.set('category', params.category);
-      if (params.search) query.set('search', params.search);
-      if (params.sort) query.set('sort', params.sort);
-      if (params.page) query.set('page', params.page.toString());
-      return fetchBackend(`/api/v1/products/?${query.toString()}`);
-    },
-    get: async (id: string): Promise<Product> => {
-      return fetchBackend(`/api/v1/products/${id}`);
-    },
-    create: async (data: Partial<Product>, token: string): Promise<Product> => {
-      return fetchBackend('/api/v1/products/', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-        body: JSON.stringify(data),
-      });
-    },
-    update: async (id: string, data: Partial<Product>, token: string): Promise<Product> => {
-      return fetchBackend(`/api/v1/products/${id}`, {
-        method: 'PUT',
-        headers: { Authorization: `Bearer ${token}` },
-        body: JSON.stringify(data),
-      });
-    },
-    delete: async (id: string, token: string): Promise<{ message: string }> => {
-      return fetchBackend(`/api/v1/products/${id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
-      });
-    },
-  },
-  orders: {
-    create: async (
-      data: {
-        items: { product_id: string; quantity: number }[];
-        delivery_address: string;
-        phone: string;
-        comment: string;
-      },
-      token: string
-    ): Promise<Order> => {
-      return fetchBackend('/api/v1/orders/', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-        body: JSON.stringify(data),
-      });
-    },
-    list: async (token: string): Promise<{ total: number; page: number; size: number; items: Order[] }> => {
-      return fetchBackend('/api/v1/orders/', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-    },
-    get: async (id: string, token: string): Promise<Order> => {
-      return fetchBackend(`/api/v1/orders/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-    },
-    updateStatus: async (id: string, status: OrderStatus, token: string): Promise<Order> => {
-      return fetchBackend(`/api/v1/orders/${id}/status`, {
-        method: 'PATCH',
-        headers: { Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ status }),
-      });
-    },
-  },
-  recommendations: {
-    get: async (productId: string): Promise<Product[]> => {
-      return fetchBackend(`/api/v1/recommendations/${productId}`);
-    },
-    getGraph: async (productId: string): Promise<Product[]> => {
-      return fetchBackend(`/api/v1/recommendations/graph/${productId}`);
-    },
-  },
-  analytics: {
-    dashboard: async (token: string) => {
-      return fetchBackend('/api/v1/analytics/dashboard', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-    },
-    sales: async (days: number, token: string) => {
-      return fetchBackend(`/api/v1/analytics/sales?days=${days}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-    },
-  },
-  reports: {
-    invoice: async (orderId: string, token: string): Promise<Blob> => {
-      return fetchBackend(`/api/v1/reports/invoice/${orderId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-    },
-    seo: async (productId: string, token: string) => {
-      return fetchBackend(`/api/v1/reports/seo/${productId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-    },
-  },
+  // Orders
+  getOrders: (status?: string) =>
+    request<{ orders: any[]; count: number }>(`/api/orders${status ? `?status=${status}` : ''}`),
+  getOrder: (id: string) => request<any>(`/api/orders/${id}`),
+  createOrder: (data: any) =>
+    request<any>('/api/orders', { method: 'POST', body: JSON.stringify(data) }),
+  updateOrderStatus: (id: string, status: string) =>
+    request<any>(`/api/orders/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
+  setOrderPrice: (id: string, price_tier: number) =>
+    request<any>(`/api/orders/${id}/price`, { method: 'PATCH', body: JSON.stringify({ price_tier }) }),
+  getQueue: () => request<any>('/api/orders/queue'),
+
+  // Tobacco
+  getBrands: () => request<any[]>('/api/tobacco/brands'),
+  getFlavors: (all?: boolean) =>
+    request<any[]>(`/api/tobacco/flavors${all ? '?all=true' : ''}`),
+  getFlavorsByBrand: () => request<any[]>('/api/tobacco/flavors/by-brand'),
+  addStock: (flavorId: number, grams: number) =>
+    request<any>(`/api/tobacco/flavors/${flavorId}/add-stock`, {
+      method: 'POST', body: JSON.stringify({ grams }),
+    }),
+  updateFlavor: (id: number, data: any) =>
+    request<any>(`/api/tobacco/flavors/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+
+  // Restock
+  getRestockRequests: (status?: string) =>
+    request<any[]>(`/api/restock${status ? `?status=${status}` : ''}`),
+  fulfillRestock: (id: number, grams?: number) =>
+    request<any>(`/api/restock/${id}/fulfill`, { method: 'POST', body: JSON.stringify({ grams }) }),
+  dismissRestock: (id: number) =>
+    request<any>(`/api/restock/${id}`, { method: 'PATCH', body: JSON.stringify({ status: 'dismissed' }) }),
+
+  // Masters
+  getMasters: () => request<any[]>('/api/masters'),
+  createMaster: (name: string) =>
+    request<any>('/api/masters', { method: 'POST', body: JSON.stringify({ name }) }),
+  updateMaster: (id: string, data: any) =>
+    request<any>(`/api/masters/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+
+  // Dashboard
+  getDashboard: () => request<any>('/api/dashboard'),
+  getClients: () => request<any[]>('/api/dashboard/clients'),
+  setClientPrice: (id: string, price_tier: number) =>
+    request<any>(`/api/dashboard/clients/${id}/price`, {
+      method: 'PATCH', body: JSON.stringify({ price_tier }),
+    }),
+
+  // Atmosphere
+  getAtmosphere: () => request<any[]>('/api/atmosphere'),
+  updateAtmosphere: (key: string, value: string) =>
+    request<any>(`/api/atmosphere/${key}`, { method: 'PATCH', body: JSON.stringify({ value }) }),
+
+  // Smart Features
+  getSmartFeatures: () => request<any[]>('/api/smart'),
+  toggleFeature: (key: string, is_enabled: boolean) =>
+    request<any>(`/api/smart/${key}`, { method: 'PATCH', body: JSON.stringify({ is_enabled }) }),
+  updateFeatureConfig: (key: string, config: any) =>
+    request<any>(`/api/smart/${key}`, { method: 'PATCH', body: JSON.stringify({ config }) }),
+
+  // Liquids
+  getLiquids: () => request<any[]>('/api/liquids'),
 };

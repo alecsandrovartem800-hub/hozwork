@@ -1,33 +1,25 @@
 # Dependencies
 node_modules/
-__pycache__/
-*.pyc
-*.pyo
-.venv/
-venv/
-env/
+.pnp
+.pnp.js
 
-# Environment variables (NEVER commit these!)
-.env
-.env.local
-.env.production
-.env.development
-.env.*.local
-
-# Next.js
+# Build output
+dist/
 .next/
 out/
 
-# Build
-dist/
-build/
-*.egg-info/
+# Environment
+.env
+.env.local
+.env.production
+.env.*.local
 
 # IDE
-.idea/
 .vscode/
+.idea/
 *.swp
 *.swo
+*~
 
 # OS
 .DS_Store
@@ -37,11 +29,9 @@ Thumbs.db
 *.log
 npm-debug.log*
 
-# Testing
-coverage/
-.pytest_cache/
+# TypeScript
+*.tsbuildinfo
 
-# Generated
-*.pdf
-
+# Misc
 .vercel
+.wrangler
