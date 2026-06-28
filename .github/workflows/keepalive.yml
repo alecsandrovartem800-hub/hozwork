@@ -1,0 +1,22 @@
+name: SPORT LOUNGE Keepalive
+
+on:
+  schedule:
+    # Run every 10 minutes
+    - cron: '*/10 * * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  ping:
+    name: 🌐 Ping Services
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Backend API
+        run: |
+          echo "Pinging Backend API..."
+          curl -s -f https://sport-lounge-api.onrender.com/ || echo "Backend seems down or sleeping, checking response..."
+          
+      - name: Ping Frontend Static Site
+        run: |
+          echo "Pinging Frontend..."
+          curl -s -f https://sport-lounge-frontend.onrender.com/ || echo "Frontend is down"
