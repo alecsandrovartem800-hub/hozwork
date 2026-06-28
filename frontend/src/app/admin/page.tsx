@@ -1,20 +1,18 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
-import { DashboardData, STATUS_LABELS, STATUS_EMOJI } from '@/types';
+import { STATUS_LABELS, STATUS_EMOJI } from '@/types';
+import { WalletIcon, UsersIcon, WarningIcon, SparklesIcon } from '@/components/ui/Icons';
 
-// Calendar component helpers
 const getDaysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
 const getFirstDayOfMonth = (year: number, month: number) => {
   const day = new Date(year, month, 1).getDay();
-  return day === 0 ? 6 : day - 1; // Adjust for Russian calendar (starts on Monday)
+  return day === 0 ? 6 : day - 1;
 };
 
 export default function AdminDashboard() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  
-  // Calendar state
   const [currentDate] = useState(new Date());
   
   const fetchData = () => {
@@ -45,13 +43,12 @@ export default function AdminDashboard() {
   if (!data) return <div style={{ color: 'var(--danger)' }}>Ошибка загрузки данных</div>;
 
   const kpis = [
-    { label: 'Заказов сегодня', value: data.today.orders, icon: '🔥', accent: 'var(--gold)', sub: `${data.today.active} активных` },
-    { label: 'Выручка сегодня', value: `${data.today.revenue.toLocaleString('ru-RU')}₽`, icon: '💰', accent: 'var(--success)', sub: `${data.today.completed} выполнено` },
-    { label: 'Клиенты', value: data.clients?.total || 0, icon: '👥', accent: 'var(--info)', sub: 'Всего в базе' },
-    { label: 'Низкий запас', value: data.tobacco.lowStock.length, icon: '⚠️', accent: 'var(--warning)', sub: `${data.tobacco.pendingRestocks} заявок` },
+    { label: 'Заказов сегодня', value: data.today.orders, icon: (color: string) => <SparklesIcon size={22} color={color} />, accent: 'var(--gold)', sub: `${data.today.active} активных` },
+    { label: 'Выручка сегодня', value: `${data.today.revenue.toLocaleString('ru-RU')}₽`, icon: (color: string) => <WalletIcon size={22} color={color} />, accent: 'var(--success)', sub: `${data.today.completed} выполнено` },
+    { label: 'Клиенты', value: data.clients?.total || 0, icon: (color: string) => <UsersIcon size={22} color={color} />, accent: 'var(--info)', sub: 'Всего в базе' },
+    { label: 'Низкий запас', value: data.tobacco.lowStock.length, icon: (color: string) => <WarningIcon size={22} color={color} />, accent: 'var(--warning)', sub: `${data.tobacco.pendingRestocks} заявок` },
   ];
 
-  // Prepare chart data (using mock or data.kpiHistory)
   const history = data.kpiHistory && data.kpiHistory.length > 0
     ? [...data.kpiHistory].reverse()
     : [
@@ -66,7 +63,6 @@ export default function AdminDashboard() {
 
   const maxRevenue = Math.max(...history.map((h: any) => Number(h.total_revenue || 0)), 1000);
 
-  // Generate calendar days
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
   const daysInMonth = getDaysInMonth(year, month);
@@ -90,7 +86,7 @@ export default function AdminDashboard() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gold-gradient" style={{ fontFamily: "'Playfair Display', serif" }}>Дашборд</h1>
-        <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+        <span className="text-[10px] uppercase font-bold tracking-wider" style={{ color: 'var(--text-muted)' }}>
           Обновлено: {new Date().toLocaleTimeString('ru-RU')}
         </span>
       </div>
@@ -98,27 +94,27 @@ export default function AdminDashboard() {
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 stagger-children">
         {kpis.map((kpi, i) => (
-          <div key={i} className="card p-5 animate-fade-in" style={{ borderLeft: `3px solid ${kpi.accent}` }}>
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-2xl">{kpi.icon}</span>
-              <span className="text-xs px-2 py-1 rounded-full" style={{ background: `${kpi.accent}20`, color: kpi.accent }}>
+          <div key={i} className="card p-6 shadow-premium" style={{ borderLeft: `3px solid ${kpi.accent}`, borderTop: '1px solid var(--border)', borderRight: '1px solid var(--border)', borderBottom: '1px solid var(--border)' }}>
+            <div className="flex items-center justify-between mb-4">
+              {kpi.icon(kpi.accent)}
+              <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full" style={{ background: `${kpi.accent}12`, color: kpi.accent }}>
                 {kpi.sub}
               </span>
             </div>
-            <p className="text-2xl font-bold mb-1" style={{ color: kpi.accent }}>{kpi.value}</p>
-            <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{kpi.label}</p>
+            <p className="text-2xl font-bold mb-1 tracking-wide" style={{ color: 'var(--text-primary)' }}>{kpi.value}</p>
+            <p className="text-[10px] uppercase tracking-wider font-semibold" style={{ color: 'var(--text-muted)' }}>{kpi.label}</p>
           </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
         {/* Revenue Analytics Chart */}
-        <div className="lg:col-span-2 card p-6 flex flex-col justify-between">
+        <div className="lg:col-span-2 card p-6 flex flex-col justify-between shadow-premium" style={{ border: '1px solid var(--border)' }}>
           <div>
-            <h2 className="text-lg font-semibold mb-1" style={{ color: 'var(--gold-light)', fontFamily: "'Playfair Display', serif" }}>
-              📊 Аналитика выручки
+            <h2 className="text-base font-semibold mb-1" style={{ color: 'var(--gold-light)', fontFamily: "'Playfair Display', serif" }}>
+              Аналитика доходов
             </h2>
-            <p className="text-xs mb-6" style={{ color: 'var(--text-secondary)' }}>
+            <p className="text-[10px] uppercase tracking-wider mb-6 font-semibold" style={{ color: 'var(--text-muted)' }}>
               Статистика доходов за последние 7 дней
             </p>
           </div>
@@ -131,9 +127,9 @@ export default function AdminDashboard() {
                 : h.snapshot_date;
 
               return (
-                <div key={i} className="flex-1 flex flex-col items-center gap-2 group h-full justify-end">
+                <div key={i} className="flex-1 flex flex-col items-center gap-2.5 group h-full justify-end">
                   <div className="relative w-full flex justify-center">
-                    <span className="absolute -top-8 bg-black/80 text-[10px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" style={{ color: 'var(--gold)' }}>
+                    <span className="absolute -top-8 bg-[#0c0c0e]/95 text-[9px] font-bold px-2 py-0.5 rounded border pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300" style={{ color: 'var(--gold)', borderColor: 'var(--border)' }}>
                       {Number(h.total_revenue || 0).toLocaleString('ru-RU')}₽
                     </span>
                   </div>
@@ -142,10 +138,10 @@ export default function AdminDashboard() {
                     style={{
                       height: heightPercent,
                       background: 'linear-gradient(to top, var(--gold-dark), var(--gold))',
-                      boxShadow: '0 0 15px rgba(212,165,116,0.3)',
+                      boxShadow: '0 0 15px rgba(217,178,130,0.15)',
                     }}
                   />
-                  <span className="text-[10px] uppercase font-bold" style={{ color: 'var(--text-muted)' }}>
+                  <span className="text-[9px] uppercase font-bold tracking-wider" style={{ color: 'var(--text-muted)' }}>
                     {formattedDate}
                   </span>
                 </div>
@@ -155,17 +151,17 @@ export default function AdminDashboard() {
         </div>
 
         {/* Lounge Calendar */}
-        <div className="card p-6 flex flex-col justify-between">
+        <div className="card p-6 flex flex-col justify-between shadow-premium" style={{ border: '1px solid var(--border)' }}>
           <div>
-            <h2 className="text-lg font-semibold mb-1" style={{ color: 'var(--gold-light)', fontFamily: "'Playfair Display', serif" }}>
-              📅 Календарь
+            <h2 className="text-base font-semibold mb-1" style={{ color: 'var(--gold-light)', fontFamily: "'Playfair Display', serif" }}>
+              Календарь
             </h2>
-            <p className="text-xs mb-4" style={{ color: 'var(--text-secondary)' }}>
+            <p className="text-[10px] uppercase tracking-wider mb-6 font-semibold" style={{ color: 'var(--text-muted)' }}>
               {monthNames[month]} {year}
             </p>
           </div>
 
-          <div className="grid grid-cols-7 gap-1 text-center text-xs mb-2 font-bold" style={{ color: 'var(--text-muted)' }}>
+          <div className="grid grid-cols-7 gap-1 text-center text-[10px] mb-3 font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
             {["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"].map(d => <span key={d}>{d}</span>)}
           </div>
 
@@ -173,9 +169,9 @@ export default function AdminDashboard() {
             {calendarDays.map((item, idx) => (
               <div
                 key={idx}
-                className="py-1.5 rounded-lg font-medium flex items-center justify-center"
+                className="py-2 rounded-lg font-medium flex items-center justify-center"
                 style={{
-                  color: item.isToday ? '#0a0a0a' : (item.day ? 'var(--text-primary)' : 'transparent'),
+                  color: item.isToday ? '#060608' : (item.day ? 'var(--text-primary)' : 'transparent'),
                   background: item.isToday ? 'var(--gold)' : 'transparent',
                   border: item.isToday ? 'none' : '1px solid transparent',
                 }}
@@ -185,47 +181,47 @@ export default function AdminDashboard() {
             ))}
           </div>
 
-          <div className="mt-4 pt-3 flex flex-col gap-2 text-xxs" style={{ borderTop: '1px solid var(--border)', color: 'var(--text-muted)' }}>
+          <div className="mt-5 pt-4 flex flex-col gap-2 text-[9px] uppercase font-semibold tracking-wider" style={{ borderTop: '1px solid var(--border)', color: 'var(--text-muted)' }}>
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full" style={{ background: 'var(--success)' }} />
-              <span>Сегодня на смене: Алексей, Дмитрий</span>
+              <div className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--success)' }} />
+              <span>Смена: Алексей, Дмитрий</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full" style={{ background: 'var(--gold)' }} />
-              <span>Текущие акции: Вечерний Дым (минус 15% до 19:00)</span>
+              <div className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--gold)' }} />
+              <span>Акция: Вечерний Дым (-15%)</span>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Recent Orders */}
-        <div className="lg:col-span-2 card p-6">
-          <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--gold-light)', fontFamily: "'Playfair Display', serif" }}>
+        <div className="lg:col-span-2 card p-6 shadow-premium" style={{ border: '1px solid var(--border)' }}>
+          <h2 className="text-base font-semibold mb-5" style={{ color: 'var(--gold-light)', fontFamily: "'Playfair Display', serif" }}>
             Последние заказы
           </h2>
           <div className="flex flex-col gap-3">
             {data.recentOrders.length === 0 ? (
-              <p style={{ color: 'var(--text-muted)' }}>Нет заказов</p>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Нет активных заказов</p>
             ) : (
               data.recentOrders.slice(0, 8).map((order: any) => (
-                <div key={order.id} className="flex items-center justify-between p-3 rounded-xl transition-all"
-                  style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)' }}>
-                  <div className="flex items-center gap-3">
-                    <span>{STATUS_EMOJI[order.status] || '⚪'}</span>
+                <div key={order.id} className="flex items-center justify-between p-4 rounded-xl transition-all"
+                  style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid var(--border)' }}>
+                  <div className="flex items-center gap-4">
+                    <span className="text-xl">{STATUS_EMOJI[order.status] || '⚪'}</span>
                     <div>
-                      <p className="text-sm font-medium">{order.guest_name}</p>
-                      <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                        {order.items?.length || 0} вкусов • {order.master?.name || 'Нет мастера'}
+                      <p className="text-sm font-semibold">{order.guest_name}</p>
+                      <p className="text-xs font-light" style={{ color: 'var(--text-muted)' }}>
+                        {order.items?.length || 0} вкусов • {order.master?.name || 'Мастер не назначен'}
                       </p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <span className={`badge badge-${order.status} text-xs`}>
+                    <span className={`badge badge-${order.status} text-[9px] font-bold`}>
                       {STATUS_LABELS[order.status]}
                     </span>
                     {order.total_price > 0 && (
-                      <p className="text-xs mt-1 font-medium" style={{ color: 'var(--gold)' }}>{order.total_price}₽</p>
+                      <p className="text-xs mt-1.5 font-bold" style={{ color: 'var(--gold)' }}>{order.total_price}₽</p>
                     )}
                   </div>
                 </div>
@@ -235,9 +231,9 @@ export default function AdminDashboard() {
         </div>
 
         {/* Masters Status */}
-        <div className="card p-6">
-          <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--gold-light)', fontFamily: "'Playfair Display', serif" }}>
-            👨‍🍳 Мастера
+        <div className="card p-6 shadow-premium" style={{ border: '1px solid var(--border)' }}>
+          <h2 className="text-base font-semibold mb-5" style={{ color: 'var(--gold-light)', fontFamily: "'Playfair Display', serif" }}>
+            Мастера
           </h2>
           <div className="flex flex-col gap-3">
             {data.masters.list.map((master: any) => {
@@ -245,14 +241,14 @@ export default function AdminDashboard() {
               const statusLabels: Record<string, string> = { free: 'Свободен', busy: 'Занят', offline: 'Офлайн' };
 
               return (
-                <div key={master.id} className="flex items-center justify-between p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.02)' }}>
+                <div key={master.id} className="flex items-center justify-between p-4 rounded-xl" style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid var(--border)' }}>
                   <div className="flex items-center gap-3">
-                    <div className="w-3 h-3 rounded-full" style={{ background: statusColors[master.status] }} />
-                    <span className="text-sm font-medium">{master.name}</span>
+                    <div className="w-2.5 h-2.5 rounded-full" style={{ background: statusColors[master.status] }} />
+                    <span className="text-sm font-semibold">{master.name}</span>
                   </div>
                   <div className="text-right">
-                    <span className="text-xs" style={{ color: statusColors[master.status] }}>{statusLabels[master.status]}</span>
-                    <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Сегодня: {master.completed_today}</p>
+                    <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: statusColors[master.status] }}>{statusLabels[master.status]}</span>
+                    <p className="text-xs font-light mt-0.5" style={{ color: 'var(--text-muted)' }}>Сегодня: {master.completed_today}</p>
                   </div>
                 </div>
               );
@@ -261,12 +257,12 @@ export default function AdminDashboard() {
 
           {/* Low stock alerts */}
           {data.tobacco.lowStock.length > 0 && (
-            <div className="mt-6 pt-4" style={{ borderTop: '1px solid var(--border)' }}>
-              <h3 className="text-sm font-semibold mb-3" style={{ color: 'var(--warning)' }}>⚠️ Низкий запас</h3>
+            <div className="mt-6 pt-5" style={{ borderTop: '1px solid var(--border)' }}>
+              <h3 className="text-xs uppercase tracking-wider mb-4 font-bold" style={{ color: 'var(--warning)' }}>⚠️ Низкий запас табака</h3>
               {data.tobacco.lowStock.slice(0, 5).map((flavor: any) => (
-                <div key={flavor.id} className="flex justify-between text-xs py-1.5">
+                <div key={flavor.id} className="flex justify-between text-xs py-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.01)' }}>
                   <span style={{ color: 'var(--text-secondary)' }}>{flavor.brand?.name} {flavor.name}</span>
-                  <span style={{ color: 'var(--danger)' }}>{Math.round(flavor.stock_grams)}г</span>
+                  <span style={{ color: 'var(--danger)', fontWeight: 600 }}>{Math.round(flavor.stock_grams)}г</span>
                 </div>
               ))}
             </div>

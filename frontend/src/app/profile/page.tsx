@@ -6,6 +6,7 @@ import Footer from '@/components/layout/Footer';
 import { supabase } from '@/lib/supabase';
 import { api } from '@/lib/api';
 import { Order, STATUS_LABELS, STATUS_EMOJI } from '@/types';
+import { CrownIcon, OrderIcon, WalletIcon, UsersIcon, LogoutIcon } from '@/components/ui/Icons';
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -35,6 +36,7 @@ export default function ProfilePage() {
       } catch (e) {
         console.error('Error fetching user profile data:', e);
       } finally {
+        setUser(session.user);
         setLoading(false);
       }
     });
@@ -59,7 +61,6 @@ export default function ProfilePage() {
   };
 
   const handleOrderMix = (mix: any) => {
-    // Save mix to localStorage so that order page can retrieve it
     localStorage.setItem('sport_lounge_prefill_mix', JSON.stringify(mix.items.map((i: any) => ({
       flavor_id: i.flavor_id,
       name: i.flavor.name,
@@ -76,13 +77,15 @@ export default function ProfilePage() {
         <main className="pt-24 pb-16 min-h-screen flex items-center justify-center">
           <div className="text-center">
             <span className="animate-spin inline-block w-8 h-8 rounded-full border-4 border-solid border-current border-t-transparent text-gold mr-3" style={{ color: 'var(--gold)' }} />
-            <p className="mt-2 text-sm text-secondary" style={{ color: 'var(--text-secondary)' }}>Загрузка профиля...</p>
+            <p className="mt-4 text-xs uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Загрузка профиля...</p>
           </div>
         </main>
         <Footer />
       </>
     );
   }
+
+  const isUserValid = user && user.role;
 
   return (
     <>
@@ -91,70 +94,79 @@ export default function ProfilePage() {
         <div className="max-w-4xl mx-auto px-4 pt-4 animate-fade-in">
           {/* Profile header card */}
           {user && (
-            <div className="card p-6 md:p-8 mb-8 relative overflow-hidden">
-              <div className="flex flex-col md:flex-row items-center gap-6 z-10 relative">
-                {user.avatar ? (
-                  <img src={user.avatar} alt={user.name} className="w-20 h-20 rounded-full border-2 border-solid" style={{ borderColor: 'var(--gold)' }} />
+            <div className="card p-8 md:p-10 mb-12 relative overflow-hidden shadow-premium" style={{ border: '1px solid var(--border)' }}>
+              <div className="flex flex-col md:flex-row items-center gap-8 z-10 relative">
+                {isUserValid && user.avatar ? (
+                  <img src={user.avatar} alt={user.name} className="w-24 h-24 rounded-full border-2 border-solid" style={{ borderColor: 'var(--gold)' }} />
                 ) : (
-                  <div className="w-20 h-20 rounded-full flex items-center justify-center text-4xl" style={{ background: 'rgba(255,255,255,0.03)' }}>👤</div>
+                  <div className="w-24 h-24 rounded-full flex items-center justify-center text-4xl border" style={{ background: 'rgba(255,255,255,0.01)', borderColor: 'var(--border)' }}>
+                    <UsersIcon size={44} color="var(--gold)" />
+                  </div>
                 )}
                 
                 <div className="text-center md:text-left flex-1">
-                  <h1 className="text-2xl font-bold text-gold-gradient mb-1" style={{ fontFamily: "'Playfair Display', serif" }}>
-                    {user.name || 'Гость'}
+                  <h1 className="text-3xl font-bold text-gold-gradient mb-2" style={{ fontFamily: "'Playfair Display', serif" }}>
+                    {isUserValid ? user.name : (user.email ? user.email.split('@')[0] : 'Уважаемый Гость')}
                   </h1>
-                  <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>{user.email}</p>
+                  <p className="text-sm mb-6" style={{ color: 'var(--text-secondary)' }}>{user.email}</p>
                   
-                  <div className="flex flex-wrap justify-center md:justify-start gap-4 text-xs">
-                    <span className="px-3 py-1 rounded-full" style={{ background: 'rgba(212,165,116,0.1)', color: 'var(--gold)', border: '1px solid rgba(212,165,116,0.2)' }}>
-                      🔑 Роль: {user.role === 'admin' ? 'Администратор' : user.role === 'master' ? 'Кальянный Мастер' : 'Клиент'}
+                  <div className="flex flex-wrap justify-center md:justify-start gap-4 text-xs font-semibold uppercase tracking-wider">
+                    <span className="px-3.5 py-1.5 rounded-full" style={{ background: 'rgba(217,178,130,0.05)', color: 'var(--gold)', border: '1px solid var(--border)' }}>
+                      Клубная карта: {isUserValid && user.role === 'admin' ? 'Администратор' : isUserValid && user.role === 'master' ? 'Мастер' : 'VIP Клиент'}
                     </span>
-                    <span className="px-3 py-1 rounded-full" style={{ background: 'rgba(74,222,128,0.1)', color: 'var(--success)' }}>
-                      📦 {user.total_orders || 0} заказов
+                    <span className="px-3.5 py-1.5 rounded-full" style={{ background: 'rgba(52,199,89,0.05)', color: 'var(--success)', border: '1px solid rgba(52,199,89,0.1)' }}>
+                      {isUserValid ? user.total_orders : 0} заказов
                     </span>
-                    <span className="px-3 py-1 rounded-full" style={{ background: 'rgba(96,165,250,0.1)', color: 'var(--info)' }}>
-                      💰 Потрачено: {(user.total_spent || 0).toLocaleString('ru-RU')}₽
+                    <span className="px-3.5 py-1.5 rounded-full" style={{ background: 'rgba(0,122,255,0.05)', color: 'var(--info)', border: '1px solid rgba(0,122,255,0.1)' }}>
+                      {(isUserValid ? user.total_spent : 0).toLocaleString('ru-RU')}₽ потрачено
                     </span>
                   </div>
                 </div>
 
-                <button onClick={handleLogout} className="btn-outline text-xs px-4 py-2 mt-4 md:mt-0">Выйти</button>
+                <button onClick={handleLogout} className="btn-outline text-xxs font-bold px-5 py-2.5 flex items-center gap-2">
+                  <LogoutIcon size={14} color="var(--gold)" />
+                  Выйти
+                </button>
               </div>
               
-              <div className="absolute top-0 right-0 w-32 h-32 rounded-full filter blur-[50px] opacity-[0.05]"
+              {/* Background gradient blur */}
+              <div className="absolute top-0 right-0 w-44 h-44 rounded-full filter blur-[70px] opacity-[0.06]"
                 style={{ background: 'var(--gold)' }} />
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
             {/* Left side: Favourite Mixes */}
             <div>
-              <h2 className="text-lg font-bold mb-4 text-gold-gradient" style={{ fontFamily: "'Playfair Display', serif" }}>
-                💾 Мои миксы
-              </h2>
+              <div className="flex items-center gap-2.5 mb-6">
+                <CrownIcon size={20} color="var(--gold)" />
+                <h2 className="text-xl font-bold text-gold-gradient" style={{ fontFamily: "'Playfair Display', serif" }}>
+                  Мои миксы
+                </h2>
+              </div>
               
               {mixes.length === 0 ? (
-                <div className="card p-6 text-center">
-                  <span className="text-3xl block mb-2">🍃</span>
-                  <p className="text-sm" style={{ color: 'var(--text-muted)' }}>У вас пока нет сохраненных миксов</p>
+                <div className="card p-10 text-center shadow-premium" style={{ border: '1px solid var(--border)' }}>
+                  <span className="text-3xl block mb-3">🍃</span>
+                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>У вас пока нет сохраненных миксов</p>
                 </div>
               ) : (
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-4">
                   {mixes.map(mix => (
-                    <div key={mix.id} className="card p-5 hover-lift">
-                      <div className="flex justify-between items-start mb-2">
+                    <div key={mix.id} className="card p-6 shadow-premium hover-lift" style={{ border: '1px solid var(--border)' }}>
+                      <div className="flex justify-between items-start mb-3 gap-2">
                         <h3 className="font-semibold text-sm">{mix.name}</h3>
-                        <div className="flex gap-2">
-                          <button onClick={() => handleOrderMix(mix)} className="text-xs border-none cursor-pointer px-2.5 py-1 rounded-lg btn-gold font-medium">Заказать</button>
+                        <div className="flex gap-2.5">
+                          <button onClick={() => handleOrderMix(mix)} className="text-[10px] font-bold uppercase tracking-wider border-none cursor-pointer px-3 py-1.5 rounded-lg btn-gold">Заказать</button>
                           <button onClick={() => handleDeleteMix(mix.id)} className="text-xs border-none cursor-pointer p-1 rounded-lg" style={{ color: 'var(--danger)', background: 'transparent' }}>✕</button>
                         </div>
                       </div>
                       
-                      {mix.description && <p className="text-xs mb-3" style={{ color: 'var(--text-secondary)' }}>{mix.description}</p>}
+                      {mix.description && <p className="text-xs mb-4 leading-relaxed font-light" style={{ color: 'var(--text-secondary)' }}>{mix.description}</p>}
                       
-                      <div className="flex flex-wrap gap-1.5 pt-2" style={{ borderTop: '1px solid var(--border)' }}>
+                      <div className="flex flex-wrap gap-2 pt-3" style={{ borderTop: '1px solid var(--border)' }}>
                         {mix.items.map((i: any) => (
-                          <span key={i.id} className="text-xxs px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,255,255,0.03)', color: 'var(--text-secondary)', border: '1px solid var(--border)' }}>
+                          <span key={i.id} className="text-[10px] px-2.5 py-0.5 rounded-full font-medium" style={{ background: 'rgba(255,255,255,0.02)', color: 'var(--text-secondary)', border: '1px solid var(--border)' }}>
                             {i.flavor.brand?.name} {i.flavor.name} ({i.grams}г)
                           </span>
                         ))}
@@ -167,43 +179,46 @@ export default function ProfilePage() {
 
             {/* Right side: Orders History */}
             <div>
-              <h2 className="text-lg font-bold mb-4 text-gold-gradient" style={{ fontFamily: "'Playfair Display', serif" }}>
-                📦 История заказов
-              </h2>
+              <div className="flex items-center gap-2.5 mb-6">
+                <OrderIcon size={20} color="var(--gold)" />
+                <h2 className="text-xl font-bold text-gold-gradient" style={{ fontFamily: "'Playfair Display', serif" }}>
+                  История заказов
+                </h2>
+              </div>
 
               {orders.length === 0 ? (
-                <div className="card p-6 text-center">
-                  <span className="text-3xl block mb-2">💨</span>
-                  <p className="text-sm" style={{ color: 'var(--text-muted)' }}>История заказов пуста</p>
+                <div className="card p-10 text-center shadow-premium" style={{ border: '1px solid var(--border)' }}>
+                  <span className="text-3xl block mb-3">💨</span>
+                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>История заказов пока пуста</p>
                 </div>
               ) : (
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-4">
                   {orders.map(order => (
-                    <div key={order.id} className="card p-5">
-                      <div className="flex justify-between items-center mb-3">
-                        <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+                    <div key={order.id} className="card p-6 shadow-premium" style={{ border: '1px solid var(--border)' }}>
+                      <div className="flex justify-between items-center mb-4">
+                        <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
                           {new Date(order.created_at).toLocaleDateString('ru-RU')} в {new Date(order.created_at).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })}
                         </span>
                         
-                        <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{
-                          background: order.status === 'completed' ? 'rgba(74,222,128,0.1)' : order.status === 'cancelled' ? 'rgba(239,68,68,0.1)' : 'rgba(212,165,116,0.1)',
+                        <span className="text-[9px] px-2.5 py-0.5 rounded-full font-bold tracking-wider" style={{
+                          background: order.status === 'completed' ? 'rgba(52,199,89,0.1)' : order.status === 'cancelled' ? 'rgba(255,59,48,0.1)' : 'rgba(217,178,130,0.1)',
                           color: order.status === 'completed' ? 'var(--success)' : order.status === 'cancelled' ? 'var(--danger)' : 'var(--gold)'
                         }}>
                           {STATUS_EMOJI[order.status]} {STATUS_LABELS[order.status]}
                         </span>
                       </div>
 
-                      <div className="mb-3">
-                        <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Микс:</span>
-                        <p className="text-xs">
+                      <div className="mb-4">
+                        <span className="text-[9px] uppercase tracking-wider font-bold block mb-1" style={{ color: 'var(--text-muted)' }}>Микс кальяна:</span>
+                        <p className="text-xs leading-relaxed font-light">
                           {order.items?.map(i => `${i.flavor?.brand?.name} ${i.flavor?.name} (${i.grams}г)`).join(', ')}
                         </p>
                       </div>
 
-                      <div className="flex justify-between items-center text-xs pt-2" style={{ borderTop: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
-                        <span>Жидкость: {order.liquid?.icon} {order.liquid?.name}</span>
-                        <span className="font-semibold" style={{ color: 'var(--gold)' }}>
-                          {order.total_price > 0 ? `${order.total_price}₽` : 'Цена назначается'}
+                      <div className="flex justify-between items-center text-xs pt-3" style={{ borderTop: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
+                        <span className="font-light">База: {order.liquid?.icon} {order.liquid?.name}</span>
+                        <span className="font-bold" style={{ color: 'var(--gold)' }}>
+                          {order.total_price > 0 ? `${order.total_price}₽` : 'Цена в расчете'}
                         </span>
                       </div>
                     </div>

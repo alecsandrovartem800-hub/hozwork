@@ -6,6 +6,7 @@ import Footer from '@/components/layout/Footer';
 import { api } from '@/lib/api';
 import { supabase } from '@/lib/supabase';
 import { BrandWithFlavors, Liquid } from '@/types';
+import { SparklesIcon, LiquidWaterIcon, LiquidMilkIcon, LiquidJuiceIcon, LiquidWineIcon, LiquidIceIcon, LiquidEnergyIcon } from '@/components/ui/Icons';
 
 interface MixItem {
   flavor_id: number;
@@ -13,6 +14,15 @@ interface MixItem {
   brand: string;
   grams: number;
 }
+
+const LIQUID_ICONS: Record<string, React.ReactNode> = {
+  'Вода': <LiquidWaterIcon size={32} color="var(--gold)" />,
+  'Молоко': <LiquidMilkIcon size={32} color="var(--gold)" />,
+  'Сок': <LiquidJuiceIcon size={32} color="var(--gold)" />,
+  'Вино': <LiquidWineIcon size={32} color="var(--gold)" />,
+  'Лёд + Вода': <LiquidIceIcon size={32} color="var(--gold)" />,
+  'Энергетик': <LiquidEnergyIcon size={32} color="var(--gold)" />,
+};
 
 export default function CreateOrderPage() {
   const router = useRouter();
@@ -76,7 +86,7 @@ export default function CreateOrderPage() {
       } catch (e) {
         console.error(e);
       }
-      localStorage.removeItem('sport_lounge_prefill_mix'); // Clear it
+      localStorage.removeItem('sport_lounge_prefill_mix');
     }
   }, []);
 
@@ -96,7 +106,6 @@ export default function CreateOrderPage() {
     setSavedMixSuccess(false);
   };
 
-  // Generate AI Mix recommendation
   const handleGenerateAiMix = async () => {
     setAiLoading(true);
     setSavedMixSuccess(false);
@@ -112,7 +121,6 @@ export default function CreateOrderPage() {
     }
   };
 
-  // Save current mix to profile
   const handleSaveMixToProfile = async () => {
     if (!session) {
       alert('Пожалуйста, войдите в личный кабинет, чтобы сохранить микс.');
@@ -168,33 +176,33 @@ export default function CreateOrderPage() {
   return (
     <>
       <Header />
-      <main className="pt-20 pb-16 min-h-screen">
-        <div className="max-w-5xl mx-auto px-4 pt-8">
-          <h1 className="text-4xl font-bold text-center mb-2 text-gold-gradient" style={{ fontFamily: "'Playfair Display', serif" }}>
-            Заказать кальян
+      <main className="pt-24 pb-16 min-h-screen">
+        <div className="max-w-5xl mx-auto px-4 pt-4">
+          <h1 className="text-4xl font-bold text-center mb-2 text-gold-gradient tracking-wide" style={{ fontFamily: "'Playfair Display', serif" }}>
+            Заказ кальяна
           </h1>
-          <p className="text-center mb-10" style={{ color: 'var(--text-secondary)' }}>
-            Создайте свой идеальный микс
+          <p className="text-center mb-12 text-xs uppercase tracking-[0.2em]" style={{ color: 'var(--text-muted)' }}>
+            Индивидуальный подбор вкусовой гаммы
           </p>
 
           {/* Progress stepper */}
-          <div className="flex items-center justify-center gap-2 mb-12">
+          <div className="flex items-center justify-center gap-1.5 mb-14">
             {['Данные', 'Микс', 'Жидкость', 'Подтверждение'].map((label, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-500" style={{
-                  background: step > i + 1 ? 'rgba(74,222,128,0.15)' : step === i + 1 ? 'rgba(212,165,116,0.2)' : 'rgba(255,255,255,0.03)',
+              <div key={i} className="flex items-center gap-1.5">
+                <div className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all duration-500" style={{
+                  background: step > i + 1 ? 'rgba(52,199,89,0.06)' : step === i + 1 ? 'rgba(217,178,130,0.08)' : 'rgba(255,255,255,0.01)',
                   color: step > i + 1 ? 'var(--success)' : step === i + 1 ? 'var(--gold)' : 'var(--text-muted)',
-                  border: `1px solid ${step === i + 1 ? 'rgba(212,165,116,0.3)' : 'transparent'}`,
+                  border: `1px solid ${step === i + 1 ? 'rgba(217,178,130,0.2)' : 'var(--border)'}`,
                 }}>
-                  <span className="w-5 h-5 rounded-full flex items-center justify-center text-xs" style={{
-                    background: step > i + 1 ? 'var(--success)' : step === i + 1 ? 'var(--gold)' : 'var(--border)',
-                    color: step >= i + 1 ? '#0a0a0a' : 'var(--text-muted)',
+                  <span className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold" style={{
+                    background: step > i + 1 ? 'var(--success)' : step === i + 1 ? 'var(--gold)' : 'rgba(255,255,255,0.04)',
+                    color: step >= i + 1 ? '#060608' : 'var(--text-muted)',
                   }}>
                     {step > i + 1 ? '✓' : i + 1}
                   </span>
                   <span className="hidden sm:inline">{label}</span>
                 </div>
-                {i < 3 && <div className="w-8 h-px" style={{ background: step > i + 1 ? 'var(--success)' : 'var(--border)' }} />}
+                {i < 3 && <div className="w-6 h-px" style={{ background: step > i + 1 ? 'var(--success)' : 'var(--border)' }} />}
               </div>
             ))}
           </div>
@@ -204,28 +212,28 @@ export default function CreateOrderPage() {
             <div className="lg:col-span-2">
               {/* Step 1: Guest Info */}
               {step === 1 && (
-                <div className="card p-8 animate-fade-in">
-                  <div className="flex justify-between items-center mb-6">
+                <div className="card p-8 shadow-premium animate-fade-in" style={{ border: '1px solid var(--border)' }}>
+                  <div className="flex justify-between items-center mb-8">
                     <h2 className="text-xl font-semibold" style={{ color: 'var(--gold-light)' }}>Ваши данные</h2>
                     {!session && (
-                      <button onClick={() => router.push('/login')} className="text-xs px-3 py-1.5 rounded-lg btn-outline cursor-pointer">
-                        🔑 Войти через Google
+                      <button onClick={() => router.push('/login')} className="text-[10px] font-bold uppercase tracking-wider px-3.5 py-2 rounded-lg btn-outline cursor-pointer">
+                        Войти через Google
                       </button>
                     )}
                   </div>
                   
-                  <div className="flex flex-col gap-5">
+                  <div className="flex flex-col gap-6">
                     <div>
-                      <label className="block text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>Имя *</label>
+                      <label className="block text-xs uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>Имя *</label>
                       <input className="input" placeholder="Как вас зовут?" value={guestName} onChange={(e) => setGuestName(e.target.value)} />
                     </div>
                     <div>
-                      <label className="block text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>Телефон</label>
+                      <label className="block text-xs uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>Телефон</label>
                       <input className="input" placeholder="+7 (___) ___-__-__" value={guestPhone} onChange={(e) => setGuestPhone(e.target.value)} />
                     </div>
                     <div>
-                      <label className="block text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>Номер стола</label>
-                      <input className="input" type="number" placeholder="Необязательно" value={tableNumber} onChange={(e) => setTableNumber(e.target.value)} />
+                      <label className="block text-xs uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>Номер стола</label>
+                      <input className="input" type="number" placeholder="Укажите номер вашего стола" value={tableNumber} onChange={(e) => setTableNumber(e.target.value)} />
                     </div>
                   </div>
                 </div>
@@ -234,41 +242,43 @@ export default function CreateOrderPage() {
               {/* Step 2: Mix Builder */}
               {step === 2 && (
                 <div className="animate-fade-in">
-                  <div className="card p-6 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="card p-6 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-premium" style={{ border: '1px solid var(--border)' }}>
                     <div>
-                      <h2 className="text-xl font-semibold mb-1" style={{ color: 'var(--gold-light)' }}>Составьте микс</h2>
-                      <p className="text-xs" style={{ color: 'var(--text-muted)' }}>Выберите вкусы табака и настройте веса</p>
+                      <h2 className="text-xl font-semibold mb-1" style={{ color: 'var(--gold-light)' }}>Соберите свой вкус</h2>
+                      <p className="text-xs font-light" style={{ color: 'var(--text-muted)' }}>Выберите вкусы табака и настройте идеальные пропорции</p>
                     </div>
 
                     {isAiEnabled && (
                       <button
                         onClick={handleGenerateAiMix}
                         disabled={aiLoading}
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold border-none cursor-pointer transition-all duration-300 btn-gold animate-glow text-xs"
+                        className="flex items-center gap-2 px-5 py-3 rounded-xl font-bold border-none cursor-pointer transition-all duration-300 btn-gold animate-glow text-[10px] uppercase tracking-wider"
                       >
-                        {aiLoading ? '⏳ Смешиваем...' : '🤖 ИИ-миксолог'}
+                        <SparklesIcon size={12} color="#060608" />
+                        {aiLoading ? 'Смешиваем...' : 'ИИ-миксолог'}
                       </button>
                     )}
                   </div>
 
                   {aiDescription && (
-                    <div className="card p-5 mb-6" style={{ background: 'rgba(212,165,116,0.06)', border: '1px dashed var(--gold)' }}>
-                      <h4 className="text-xs uppercase tracking-wider mb-2" style={{ color: 'var(--gold)' }}>💡 Рекомендация ИИ: {mixName}</h4>
-                      <p className="text-xs leading-relaxed" style={{ color: 'var(--text-primary)' }}>{aiDescription}</p>
-                      
-                      <div className="flex gap-2 mt-4">
-                        <button
-                          onClick={handleSaveMixToProfile}
-                          disabled={savedMixSuccess}
-                          className="text-xs px-3 py-1.5 rounded-lg border-none cursor-pointer font-medium"
-                          style={{
-                            background: savedMixSuccess ? 'rgba(74,222,128,0.1)' : 'var(--gold)',
-                            color: savedMixSuccess ? 'var(--success)' : '#0a0a0a'
-                          }}
-                        >
-                          {savedMixSuccess ? '✓ Сохранено в профиль' : '💾 Сохранить микс'}
-                        </button>
+                    <div className="card p-6 mb-8 shadow-premium" style={{ background: 'rgba(217,178,130,0.02)', border: '1px dashed var(--gold)' }}>
+                      <div className="flex items-center gap-2 mb-3">
+                        <SparklesIcon size={16} color="var(--gold)" />
+                        <h4 className="text-xs uppercase tracking-wider font-bold" style={{ color: 'var(--gold)' }}>Рекомендация ИИ: {mixName}</h4>
                       </div>
+                      <p className="text-xs leading-relaxed font-light mb-4" style={{ color: 'var(--text-secondary)' }}>{aiDescription}</p>
+                      
+                      <button
+                        onClick={handleSaveMixToProfile}
+                        disabled={savedMixSuccess}
+                        className="text-[10px] font-bold uppercase tracking-wider px-4 py-2 rounded-lg border-none cursor-pointer transition-all"
+                        style={{
+                          background: savedMixSuccess ? 'rgba(52,199,89,0.1)' : 'var(--gold)',
+                          color: savedMixSuccess ? 'var(--success)' : '#060608'
+                        }}
+                      >
+                        {savedMixSuccess ? '✓ Сохранено в профиль' : '💾 Сохранить в профиль'}
+                      </button>
                     </div>
                   )}
 
@@ -278,34 +288,34 @@ export default function CreateOrderPage() {
                     </div>
                   ) : (
                     brands.map((brand) => (
-                      <div key={brand.id} className="mb-6">
-                        <h3 className="text-sm font-semibold mb-3 uppercase tracking-wider" style={{ color: 'var(--gold-dark)' }}>
+                      <div key={brand.id} className="mb-8">
+                        <h3 className="text-xs font-bold mb-4 uppercase tracking-[0.2em]" style={{ color: 'var(--gold-dark)' }}>
                           {brand.name}
                         </h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           {brand.flavors.map((flavor) => {
                             const inMix = mix.find((m) => m.flavor_id === flavor.id);
                             return (
                               <button
                                 key={flavor.id}
                                 onClick={() => inMix ? removeFromMix(flavor.id) : addToMix(flavor.id, flavor.name, brand.name)}
-                                className="text-left p-4 rounded-xl border-none cursor-pointer transition-all duration-300"
+                                className="text-left p-5 rounded-xl border-none cursor-pointer transition-all duration-300 shadow-premium"
                                 style={{
-                                  background: inMix ? 'rgba(212,165,116,0.15)' : 'var(--bg-card)',
+                                  background: inMix ? 'rgba(217,178,130,0.06)' : 'var(--bg-card)',
                                   border: `1px solid ${inMix ? 'var(--gold)' : 'var(--border)'}`,
                                   color: 'var(--text-primary)',
                                 }}
                               >
                                 <div className="flex items-center justify-between">
-                                  <span className="font-medium text-sm">{flavor.name}</span>
+                                  <span className="font-semibold text-sm">{flavor.name}</span>
                                   {inMix ? (
-                                    <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'var(--gold)', color: '#0a0a0a' }}>✓ В миксе</span>
+                                    <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full" style={{ background: 'var(--gold)', color: '#060608' }}>✓ В миксе</span>
                                   ) : (
-                                    <span className="text-xs" style={{ color: 'var(--text-muted)' }}>+ Добавить</span>
+                                    <span className="text-[9px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>+ Добавить</span>
                                   )}
                                 </div>
                                 {flavor.description && (
-                                  <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{flavor.description}</p>
+                                  <p className="text-xs font-light mt-2" style={{ color: 'var(--text-muted)' }}>{flavor.description}</p>
                                 )}
                               </button>
                             );
@@ -319,25 +329,29 @@ export default function CreateOrderPage() {
 
               {/* Step 3: Liquid Selection */}
               {step === 3 && (
-                <div className="card p-8 animate-fade-in">
-                  <h2 className="text-xl font-semibold mb-6" style={{ color: 'var(--gold-light)' }}>Выберите жидкость</h2>
+                <div className="card p-8 shadow-premium animate-fade-in" style={{ border: '1px solid var(--border)' }}>
+                  <h2 className="text-xl font-semibold mb-2" style={{ color: 'var(--gold-light)' }}>База для колбы</h2>
+                  <p className="text-xs mb-8" style={{ color: 'var(--text-muted)' }}>Выберите жидкость, которая дополнит ваш микс</p>
+                  
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                     {liquids.map((liquid) => (
                       <button
                         key={liquid.id}
                         onClick={() => setSelectedLiquid(liquid.id)}
-                        className="p-6 rounded-2xl text-center transition-all duration-300 border-none cursor-pointer"
+                        className="p-6 rounded-2xl text-center transition-all duration-500 border-none cursor-pointer flex flex-col items-center justify-center gap-3 shadow-premium"
                         style={{
-                          background: selectedLiquid === liquid.id ? 'rgba(212,165,116,0.15)' : 'var(--bg-card)',
-                          border: `2px solid ${selectedLiquid === liquid.id ? 'var(--gold)' : 'var(--border)'}`,
+                          background: selectedLiquid === liquid.id ? 'rgba(217,178,130,0.05)' : 'var(--bg-card)',
+                          border: `1.5px solid ${selectedLiquid === liquid.id ? 'var(--gold)' : 'var(--border)'}`,
                           color: 'var(--text-primary)',
                           transform: selectedLiquid === liquid.id ? 'scale(1.02)' : 'scale(1)',
                         }}
                       >
-                        <span className="text-3xl block mb-2">{liquid.icon}</span>
-                        <span className="font-medium text-sm block">{liquid.name}</span>
+                        <div className="transition-transform duration-500" style={{ transform: selectedLiquid === liquid.id ? 'scale(1.1)' : 'scale(1)' }}>
+                          {LIQUID_ICONS[liquid.name] || <span>💧</span>}
+                        </div>
+                        <span className="font-semibold text-xs uppercase tracking-wider block mt-1">{liquid.name}</span>
                         {liquid.description && (
-                          <span className="text-xs block mt-1" style={{ color: 'var(--text-muted)' }}>{liquid.description}</span>
+                          <span className="text-[10px] block font-light" style={{ color: 'var(--text-muted)' }}>{liquid.description}</span>
                         )}
                       </button>
                     ))}
@@ -347,38 +361,40 @@ export default function CreateOrderPage() {
 
               {/* Step 4: Review */}
               {step === 4 && (
-                <div className="card p-8 animate-fade-in">
-                  <h2 className="text-xl font-semibold mb-6" style={{ color: 'var(--gold-light)' }}>Подтверждение заказа</h2>
+                <div className="card p-8 shadow-premium animate-fade-in" style={{ border: '1px solid var(--border)' }}>
+                  <h2 className="text-xl font-semibold mb-6" style={{ color: 'var(--gold-light)' }}>Проверка заказа</h2>
 
-                  <div className="flex flex-col gap-4">
-                    <div className="p-4 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)' }}>
-                      <span className="text-xs uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Гость</span>
-                      <p className="font-medium">{guestName}</p>
-                      {guestPhone && <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{guestPhone}</p>}
-                      {tableNumber && <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Стол {tableNumber}</p>}
+                  <div className="flex flex-col gap-5">
+                    <div className="p-5 rounded-xl" style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid var(--border)' }}>
+                      <span className="text-[9px] uppercase tracking-wider font-bold" style={{ color: 'var(--text-muted)' }}>Гость</span>
+                      <p className="font-semibold text-sm mt-1">{guestName}</p>
+                      {guestPhone && <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>{guestPhone}</p>}
+                      {tableNumber && <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>Стол #{tableNumber}</p>}
                     </div>
 
-                    <div className="p-4 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)' }}>
-                      <span className="text-xs uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Микс ({totalGrams}г)</span>
-                      {mix.map((m) => (
-                        <p key={m.flavor_id} className="text-sm mt-1">
-                          <span style={{ color: 'var(--gold)' }}>{m.brand}</span> {m.name} — {m.grams}г
-                        </p>
-                      ))}
+                    <div className="p-5 rounded-xl" style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid var(--border)' }}>
+                      <span className="text-[9px] uppercase tracking-wider font-bold" style={{ color: 'var(--text-muted)' }}>Микс ({totalGrams}г)</span>
+                      <div className="mt-2 flex flex-col gap-1.5">
+                        {mix.map((m) => (
+                          <p key={m.flavor_id} className="text-xs">
+                            <span style={{ color: 'var(--gold)' }} className="font-semibold">{m.brand}</span> {m.name} — <span style={{ color: 'var(--gold-light)' }} className="font-semibold">{m.grams}г</span>
+                          </p>
+                        ))}
+                      </div>
                     </div>
 
-                    <div className="p-4 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)' }}>
-                      <span className="text-xs uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Жидкость</span>
-                      <p className="font-medium">
-                        {liquids.find((l) => l.id === selectedLiquid)?.icon} {liquids.find((l) => l.id === selectedLiquid)?.name}
+                    <div className="p-5 rounded-xl" style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid var(--border)' }}>
+                      <span className="text-[9px] uppercase tracking-wider font-bold" style={{ color: 'var(--text-muted)' }}>База</span>
+                      <p className="font-semibold text-xs uppercase tracking-wider mt-1">
+                        {liquids.find((l) => l.id === selectedLiquid)?.name}
                       </p>
                     </div>
 
                     <div>
-                      <label className="block text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>Пожелания мастеру</label>
+                      <label className="block text-xs uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>Пожелания мастеру</label>
                       <textarea
                         className="input"
-                        placeholder="Любые пожелания по крепости, жаростойкости и т.д."
+                        placeholder="Крепость, жаростойкость чаши, скорость подачи и т.д."
                         rows={3}
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
@@ -386,26 +402,26 @@ export default function CreateOrderPage() {
                       />
                     </div>
 
-                    <p className="text-sm text-center" style={{ color: 'var(--text-muted)' }}>
-                      💰 Стоимость назначается мастером после приготовления
+                    <p className="text-xs text-center" style={{ color: 'var(--text-muted)' }}>
+                      💰 Стоимость пробивается администратором индивидуально после подачи
                     </p>
                   </div>
                 </div>
               )}
 
               {/* Navigation buttons */}
-              <div className="flex justify-between mt-8">
+              <div className="flex justify-between mt-10">
                 {step > 1 ? (
-                  <button onClick={() => setStep(step - 1)} className="btn-outline">← Назад</button>
+                  <button onClick={() => setStep(step - 1)} className="btn-outline text-xs font-bold">← Назад</button>
                 ) : <div />}
                 {step < 4 ? (
-                  <button onClick={() => setStep(step + 1)} disabled={!canProceed()} className="btn-gold"
-                    style={{ opacity: canProceed() ? 1 : 0.5, cursor: canProceed() ? 'pointer' : 'not-allowed' }}>
+                  <button onClick={() => setStep(step + 1)} disabled={!canProceed()} className="btn-gold text-xs font-bold"
+                    style={{ opacity: canProceed() ? 1 : 0.4, cursor: canProceed() ? 'pointer' : 'not-allowed' }}>
                     Далее →
                   </button>
                 ) : (
-                  <button onClick={handleSubmit} disabled={submitting} className="btn-gold animate-glow">
-                    {submitting ? '⏳ Отправка...' : '🌿 Отправить заказ'}
+                  <button onClick={handleSubmit} disabled={submitting} className="btn-gold text-xs font-bold animate-glow">
+                    {submitting ? 'Отправка...' : 'Отправить заказ'}
                   </button>
                 )}
               </div>
@@ -413,50 +429,50 @@ export default function CreateOrderPage() {
 
             {/* Sidebar: Mix Preview */}
             <div className="lg:col-span-1">
-              <div className="card p-6 sticky top-24">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-semibold" style={{ color: 'var(--gold-light)', fontFamily: "'Playfair Display', serif" }}>
-                    🍃 Ваш микс
+              <div className="card p-6 sticky top-28 shadow-premium" style={{ border: '1px solid var(--border)' }}>
+                <div className="flex justify-between items-center mb-5">
+                  <h3 className="text-base font-semibold tracking-wide" style={{ color: 'var(--gold-light)', fontFamily: "'Playfair Display', serif" }}>
+                    Ваш микс
                   </h3>
                   {mix.length > 0 && (
-                    <button onClick={handleSaveMixToProfile} className="text-xs border-none cursor-pointer" style={{ background: 'transparent', color: 'var(--gold)' }}>
+                    <button onClick={handleSaveMixToProfile} className="text-[10px] uppercase font-bold tracking-wider border-none cursor-pointer" style={{ background: 'transparent', color: 'var(--gold)' }}>
                       💾 Сохранить
                     </button>
                   )}
                 </div>
                 
                 {mix.length === 0 ? (
-                  <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Добавьте вкусы для составления микса</p>
+                  <p className="text-xs font-light" style={{ color: 'var(--text-muted)' }}>Выберите вкусы табака в списке слева, чтобы составить микс.</p>
                 ) : (
-                  <div className="flex flex-col gap-3">
+                  <div className="flex flex-col gap-4">
                     {mix.map((m) => (
-                      <div key={m.flavor_id} className="p-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)' }}>
+                      <div key={m.flavor_id} className="p-3.5 rounded-xl" style={{ background: 'rgba(255,255,255,0.01)', border: '1px solid var(--border)' }}>
                         <div className="flex items-center justify-between mb-2">
                           <div>
-                            <span className="text-xs" style={{ color: 'var(--gold-dark)' }}>{m.brand}</span>
-                            <p className="text-sm font-medium">{m.name}</p>
+                            <span className="text-[9px] uppercase tracking-wider font-bold" style={{ color: 'var(--gold-dark)' }}>{m.brand}</span>
+                            <p className="text-xs font-medium">{m.name}</p>
                           </div>
                           <button onClick={() => removeFromMix(m.flavor_id)} className="text-xs border-none cursor-pointer"
                             style={{ background: 'transparent', color: 'var(--danger)' }}>✕</button>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-3">
                           <input
                             type="range"
                             min={5}
                             max={30}
                             value={m.grams}
                             onChange={(e) => updateGrams(m.flavor_id, parseInt(e.target.value))}
-                            className="flex-1"
+                            className="flex-1 cursor-pointer"
                             style={{ accentColor: 'var(--gold)' }}
                           />
-                          <span className="text-xs font-medium w-8 text-right" style={{ color: 'var(--gold)' }}>{m.grams}г</span>
+                          <span className="text-xs font-semibold w-8 text-right" style={{ color: 'var(--gold)' }}>{m.grams}г</span>
                         </div>
                       </div>
                     ))}
-                    <div className="pt-3 mt-2" style={{ borderTop: '1px solid var(--border)' }}>
-                      <div className="flex justify-between text-sm">
-                        <span style={{ color: 'var(--text-secondary)' }}>Всего</span>
-                        <span className="font-semibold" style={{ color: 'var(--gold)' }}>{totalGrams}г</span>
+                    <div className="pt-4 mt-2" style={{ borderTop: '1px solid var(--border)' }}>
+                      <div className="flex justify-between text-xs font-bold uppercase tracking-wider">
+                        <span style={{ color: 'var(--text-secondary)' }}>Общий вес</span>
+                        <span style={{ color: 'var(--gold)' }}>{totalGrams}г</span>
                       </div>
                     </div>
                   </div>
