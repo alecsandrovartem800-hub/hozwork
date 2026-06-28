@@ -6,183 +6,220 @@ interface IconProps extends React.SVGProps<SVGSVGElement> {
 }
 
 export const HookahIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor', ...props }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    {/* Bowl / Чаша */}
-    <path d="M9 3h6m-5 0v3h4V3" />
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    {/* Steam/Дым над чашей */}
+    <path d="M10 1.5c.3.5-.3 1 .2 1.5M12 1c.3.5-.3 1 .2 1.5M14 1.5c.3.5-.3 1 .2 1.5" opacity="0.7" />
+    {/* Bowl / Чаша кальяна */}
+    <path d="M9 4.5h6v1.5a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 6V4.5z" />
+    <line x1="8.5" y1="4.5" x2="15.5" y2="4.5" />
     {/* Tray / Блюдце */}
-    <path d="M6 6h12l-1 2H7z" />
-    {/* Shaft / Шахта */}
-    <path d="M12 8v8" />
-    <circle cx="12" cy="11" r="1.5" />
-    <circle cx="12" cy="14" r="1.5" />
+    <path d="M5 8.5h14l-1 2H6l-1-2z" />
+    <path d="M7 8.5h10" opacity="0.5" />
+    {/* Shaft / Шахта с декоративными элементами (двойной контур) */}
+    <line x1="11.2" y1="10.5" x2="11.2" y2="17" />
+    <line x1="12.8" y1="10.5" x2="12.8" y2="17" />
+    <circle cx="12" cy="12.5" r="1.8" />
+    <circle cx="12" cy="15" r="1.2" />
     {/* Base / Колба */}
-    <path d="M12 16c-3 0-5 1.5-5 4h10c0-2.5-2-4-5-4z" />
+    <path d="M12 17c-2.5 0-4.5 1-4.5 3.5a1 1 0 0 0 1 1h7a1 1 0 0 0 1-1c0-2.5-2-3.5-4.5-3.5z" />
+    <path d="M8.5 20c1 0 1.5-.5 3.5-.5s2.5.5 3.5.5" opacity="0.6" strokeWidth="0.8" /> {/* Уровень воды */}
     {/* Hose port & hose / Шланг */}
-    <path d="M7 18.5H4.5A1.5 1.5 0 0 1 3 17V8a1 1 0 0 1 2 0v5" />
-    <path d="M17 18.5h2.5a1.5 1.5 0 0 0 1.5-1.5v-8" />
+    <path d="M7.5 18.5H5.5A1.5 1.5 0 0 1 4 17V8c0-1.5 1-2.5 2-2.5s2 1 2 2.5v4" />
+    <path d="M16.5 18.5h1.8a1.7 1.7 0 0 0 1.7-1.7V9" />
     {/* Mouthpiece / Мундштук */}
-    <path d="M21 9V5" />
+    <path d="M20 9V4.5" />
+    <line x1="19.2" y1="4.5" x2="20.8" y2="4.5" />
   </svg>
 );
 
 export const LeafIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor', ...props }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 8.5 17 11c0 3.8-2.7 6.9-6 9z" />
-    <path d="M9 21c3-3 7-6 8-11" />
-    <path d="M13 14c1.5-1 3-2 3.5-3" />
-    <path d="M10 17c1.5-1 3.5-2 4-3" />
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    {/* Double stroke outer boundary / Двойной лист */}
+    <path d="M12.5 20.5A7.5 7.5 0 0 1 11 5.5C17.5 4.5 19 8 19 11c0 4.5-3 8-6.5 9.5z" />
+    <path d="M11.5 19.3a6.5 6.5 0 0 1-1-12.3c5.3-.8 6.5 2 6.5 4.5 0 3.7-2.3 6.7-5.5 7.8z" opacity="0.5" />
+    {/* Central stem / Центральный стебель */}
+    <path d="M10.5 21.5c3.2-3.2 7.4-6.4 8.5-11.5" />
+    {/* Veins / Прожилки */}
+    <path d="M14.5 14.5c1.5-1 3-2 3.5-3.5" />
+    <path d="M11.5 17.5c1.5-1 3.5-2 4-3.5" />
+    <path d="M9 13.5c1.2-.8 2.2-1.5 2.7-2.5" opacity="0.7" />
   </svg>
 );
 
 export const MusicIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor', ...props }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round" {...props}>
     <path d="M9 18V5l12-2v13" />
     <circle cx="6" cy="18" r="3" />
     <circle cx="18" cy="16" r="3" />
-  </svg>
-);
-
-export const ClockIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor', ...props }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <circle cx="12" cy="12" r="10" />
-    <polyline points="12 6 12 12 16 14" />
-  </svg>
-);
-
-export const WalletIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor', ...props }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4" />
-    <path d="M4 6v12c0 1.1.9 2 2 2h14v-4" />
-    <path d="M18 12a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h4v-6h-4z" />
-  </svg>
-);
-
-export const UsersIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor', ...props }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-    <circle cx="9" cy="7" r="4" />
-    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-  </svg>
-);
-
-export const CrownIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor', ...props }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7z" />
-    <path d="M3 20h18v-2H3v2z" />
-  </svg>
-);
-
-export const PenIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor', ...props }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <path d="M12 20h9" />
-    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+    {/* Decorative double stroke */}
+    <path d="M9 7l12-2" opacity="0.5" strokeWidth="0.8" />
   </svg>
 );
 
 export const SparklesIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor', ...props }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.64 5.64l2.82 2.82M15.54 15.54l2.82 2.82M5.64 18.36l2.82-2.82M15.54 8.46l2.82-2.82" />
-    <path d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z" fill="none" />
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    {/* Main star (double outline) */}
+    <path d="M10 2l2 5 5 2-5 2-2 5-2-5-5-2 5-2 2-5z" />
+    <path d="M10 4.5l1.2 3.3 3.3 1.2-3.3 1.2-1.2 3.3-1.2-3.3-3.3-1.2 3.3-1.2 1.2-3.3z" opacity="0.4" strokeWidth="0.8" />
+    {/* Secondary star 1 */}
+    <path d="M18 13l1 2.5 2.5 1-2.5 1-1 2.5-1-2.5-2.5-1 2.5-1 1-2.5z" />
+    {/* Secondary star 2 */}
+    <path d="M5 14l0.8 1.8 1.8 0.8-1.8 0.8-0.8 1.8-0.8-1.8-1.8-0.8 1.8-0.8 0.8-1.8z" />
+  </svg>
+);
+
+export const LiquidWaterIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor', ...props }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <path d="M12 21.5a6.5 6.5 0 0 0 6.5-6.5c0-4-6.5-12-6.5-12S5.5 11 5.5 15a6.5 6.5 0 0 0 6.5 6.5z" />
+    <path d="M12 19.5a4.5 4.5 0 0 0 4.5-4.5c0-2.5-4.5-8.5-4.5-8.5S7.5 12.5 7.5 15a4.5 4.5 0 0 0 4.5 4.5z" opacity="0.5" />
+  </svg>
+);
+
+export const LiquidMilkIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor', ...props }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    {/* Milk bottle shape */}
+    <path d="M7 4h10l1.5 3v13.5H5.5V7L7 4z" />
+    <path d="M8.5 5h7l1 2h-9l1-2z" opacity="0.6" />
+    <line x1="5.5" y1="8" x2="18.5" y2="8" />
+    <path d="M8 13.5c2 0 2 1.5 4 1.5s2-1.5 4-1.5" />
+    <path d="M8 16.5c2 0 2 1.5 4 1.5s2-1.5 4-1.5" opacity="0.5" />
+  </svg>
+);
+
+export const LiquidJuiceIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor', ...props }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <circle cx="12" cy="13.5" r="7.5" />
+    <circle cx="12" cy="13.5" r="6.2" opacity="0.5" strokeWidth="0.8" />
+    <path d="M15 6.5l3-4.5h2" />
+    <path d="M12 13.5l2.6-6.5" />
+    <line x1="12" y1="7.3" x2="12" y2="19.7" opacity="0.6" />
+    <line x1="6" y1="13.5" x2="18" y2="13.5" opacity="0.6" />
+    <line x1="7.8" y1="9.3" x2="16.2" y2="17.7" opacity="0.4" />
+    <line x1="7.8" y1="17.7" x2="16.2" y2="9.3" opacity="0.4" />
+  </svg>
+);
+
+export const LiquidWineIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor', ...props }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <path d="M12 14.5a4.5 4.5 0 0 0 4.5-4.5V4.5H7.5V10a4.5 4.5 0 0 0 4.5 4.5z" />
+    <path d="M8.5 8.5h7c-.5 2-2 3-3.5 3s-3-1-3.5-3z" fill="none" opacity="0.6" />
+    <line x1="12" y1="14.5" x2="12" y2="20.5" />
+    <path d="M8.5 20.5h7" />
+    <path d="M9.5 19.5h5" opacity="0.5" />
+  </svg>
+);
+
+export const LiquidIceIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor', ...props }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <rect x="3.5" y="3.5" width="7.5" height="7.5" rx="1.2" />
+    <path d="M3.5 7.5h7.5M7.5 3.5v7.5" opacity="0.4" />
+    <rect x="12.5" y="12.5" width="7.5" height="7.5" rx="1.2" />
+    <path d="M12.5 16.5h7.5M16.5 12.5v7.5" opacity="0.4" />
+    <rect x="12.5" y="3.5" width="7.5" height="7.5" rx="1.2" />
+    <path d="M12.5 7.5h7.5M16.5 3.5v7.5" opacity="0.4" />
+  </svg>
+);
+
+export const LiquidEnergyIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor', ...props }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <circle cx="12" cy="12" r="9.5" />
+    <circle cx="12" cy="12" r="8.2" opacity="0.4" strokeWidth="0.8" />
+    <polygon points="13.5 6.5 8 13.5 12.5 13.5 10.5 17.5 16 10.5 11.5 10.5 13.5 6.5" />
+  </svg>
+);
+
+export const ClockIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor', ...props }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <circle cx="12" cy="12" r="9.5" />
+    <circle cx="12" cy="12" r="8" opacity="0.4" strokeWidth="0.8" />
+    <polyline points="12 5.5 12 12 15.5 14" />
+  </svg>
+);
+
+export const WalletIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor', ...props }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <path d="M19.5 12.5V8.5H5.5A1.5 1.5 0 0 1 4 7c0-1 .8-1.5 1.5-1.5h13V8.5" />
+    <path d="M4.2 7V17c0 1.5 1 2.5 2.3 2.5h13V15.5" />
+    <path d="M16.5 12.5a1.5 1.5 0 0 0-1.5 1.5v1.5a1.5 1.5 0 0 0 1.5 1.5h4v-4.5h-4z" />
+  </svg>
+);
+
+export const UsersIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor', ...props }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <path d="M16.5 20.5v-1.5a3.5 3.5 0 0 0-3.5-3.5h-7a3.5 3.5 0 0 0-3.5 3.5v1.5" />
+    <circle cx="9.5" cy="7.5" r="3.5" />
+    <path d="M9.5 10.5a3 3 0 0 0 0-6" opacity="0.4" strokeWidth="0.8" />
+    <path d="M21.5 20.5v-1.5a3.5 3.5 0 0 0-2.8-3.4" opacity="0.7" />
+    <path d="M15.5 4.3a3.5 3.5 0 0 1 0 6.4" opacity="0.7" />
+  </svg>
+);
+
+export const CrownIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor', ...props }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <path d="M2.5 4.5l2.5 10.5h14l2.5-10.5-5 5.5-4.5-6-4.5 6-5-5.5z" />
+    <path d="M3.5 18.5h17v-1.5h-17v1.5z" />
+    <line x1="5.5" y1="15" x2="18.5" y2="15" opacity="0.6" />
+  </svg>
+);
+
+export const PenIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor', ...props }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <path d="M11.5 19.5h8.5" />
+    <path d="M15.5 3.5a1.8 1.8 0 0 1 2.5 2.5L6.5 17.5l-3.5 1 1-3.5L15.5 3.5z" />
+    <line x1="14.5" y1="4.5" x2="16.5" y2="6.5" opacity="0.6" />
   </svg>
 );
 
 export const CheckIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor', ...props }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <polyline points="20 6 9 17 4 12" />
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <polyline points="19.5 6.5 9 17 4.5 12.5" />
   </svg>
 );
 
 export const PlusIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor', ...props }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <line x1="12" y1="5" x2="12" y2="19" />
-    <line x1="5" y1="12" x2="19" y2="12" />
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <line x1="12" y1="5.5" x2="12" y2="18.5" />
+    <line x1="5.5" y1="12" x2="18.5" y2="12" />
   </svg>
 );
 
 export const SettingsIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor', ...props }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <circle cx="12" cy="12" r="3" />
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <circle cx="12" cy="12" r="3.2" />
     <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
   </svg>
 );
 
 export const LogoutIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor', ...props }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-    <polyline points="16 17 21 12 16 7" />
-    <line x1="21" y1="12" x2="9" y2="12" />
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <path d="M9.5 20.5H5.5a2 2 0 0 1-2-2V5.5a2 2 0 0 1 2-2h4M10 4.5H6a1 1 0 0 0-1 1v13a1 1 0 0 0 1 1h4" opacity="0.5" />
+    <polyline points="15.5 16.5 20.5 11.5 15.5 6.5" />
+    <line x1="20.5" y1="11.5" x2="9.5" y2="11.5" />
   </svg>
 );
 
 export const ArrowRightIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor', ...props }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <line x1="5" y1="12" x2="19" y2="12" />
-    <polyline points="12 5 19 12 12 19" />
-  </svg>
-);
-
-// Liquid Specific Icons
-export const LiquidWaterIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor', ...props }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <path d="M12 22a7 7 0 0 0 7-7c0-4.3-7-13-7-13S5 10.7 5 15a7 7 0 0 0 7 7z" />
-  </svg>
-);
-
-export const LiquidMilkIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor', ...props }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <path d="M6 3h12l2 4v14H4V7l2-4z" />
-    <line x1="4" y1="7" x2="20" y2="7" />
-    <path d="M8 12c2.5 0 2.5 2 5 2s2.5-2 5-2" />
-  </svg>
-);
-
-export const LiquidJuiceIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor', ...props }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <circle cx="12" cy="13" r="8" />
-    <path d="M12 5V2" />
-    <path d="M15 3.5l-3 1.5 2.5 2.5" />
-    <path d="M8 13h8M12 9v8" />
-  </svg>
-);
-
-export const LiquidWineIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor', ...props }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <path d="M12 15a5 5 0 0 0 5-5V4H7v6a5 5 0 0 0 5 5z" />
-    <path d="M12 15v5M9 20h6" />
-    <path d="M8 8h8" />
-  </svg>
-);
-
-export const LiquidIceIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor', ...props }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <rect x="3" y="3" width="8" height="8" rx="1" />
-    <rect x="13" y="13" width="8" height="8" rx="1" />
-    <rect x="13" y="3" width="8" height="8" rx="1" />
-  </svg>
-);
-
-export const LiquidEnergyIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor', ...props }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <circle cx="12" cy="12" r="10" />
-    <polygon points="13 7 8 13 12 13 11 17 16 11 12 11 13 7" fill="none" />
+    <line x1="4.5" y1="12" x2="19.5" y2="12" />
+    <polyline points="12.5 5 19.5 12 12.5 19" />
   </svg>
 );
 
 export const OrderIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor', ...props }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-    <polyline points="14 2 14 8 20 8" />
-    <line x1="16" y1="13" x2="8" y2="13" />
-    <line x1="16" y1="17" x2="8" y2="17" />
-    <polyline points="10 9 9 9 8 9" />
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <path d="M13.5 2.5H6.5a2 2 0 0 0-2 2v15a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V8.5L13.5 2.5z" />
+    <path d="M13.5 3v5.5H19" opacity="0.6" />
+    <line x1="15.5" y1="13.5" x2="8.5" y2="13.5" />
+    <line x1="15.5" y1="17.5" x2="8.5" y2="17.5" />
+    <line x1="10.5" y1="9.5" x2="8.5" y2="9.5" opacity="0.6" strokeWidth="0.8" />
   </svg>
 );
 
 export const WarningIcon: React.FC<IconProps> = ({ size = 24, color = 'currentColor', ...props }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-    <line x1="12" y1="9" x2="12" y2="13" />
-    <line x1="12" y1="17" x2="12.01" y2="17" />
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <path d="M10.2 3.8l-8.4 14.2a2 2 0 0 0 1.7 3H20.5a2 2 0 0 0 1.7-3L13.8 3.8a2 2 0 0 0-3.6 0z" />
+    <path d="M10.8 5.2l-7.7 13a1 1 0 0 0 .8 1.5h16.2a1 1 0 0 0 .8-1.5l-7.7-13a1 1 0 0 0-1.8 0z" opacity="0.5" strokeWidth="0.8" />
+    <line x1="12" y1="9.5" x2="12" y2="13.5" />
+    <circle cx="12" cy="17" r="0.8" fill="currentColor" />
   </svg>
 );

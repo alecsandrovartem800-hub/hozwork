@@ -67,10 +67,21 @@ export default function CreateOrderPage() {
       .finally(() => setLoading(false));
 
     // 2. Auth state handling
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
-      if (session?.user?.user_metadata) {
-        setGuestName(session.user.user_metadata.full_name || session.user.user_metadata.name || '');
+      if (session) {
+        if (session.user?.user_metadata) {
+          setGuestName(session.user.user_metadata.full_name || session.user.user_metadata.name || '');
+        }
+        try {
+          const profile = await api.getCurrentUser(session.access_token);
+          if (profile) {
+            if (profile.name) setGuestName(profile.name);
+            if (profile.phone) setGuestPhone(profile.phone);
+          }
+        } catch (e) {
+          console.error('[CreatePage] Failed to fetch current user profile details:', e);
+        }
       }
     });
 

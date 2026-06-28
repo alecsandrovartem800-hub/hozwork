@@ -26,8 +26,8 @@ const httpServer = createServer(app);
 app.use(cors({ origin: config.corsOrigins, credentials: true }));
 app.use(express.json());
 
-// Health check
-app.get('/', (_req, res) => {
+// Health check (moved to API prefix)
+app.get('/api/health', (_req, res) => {
   res.json({
     status: 'ok',
     app: 'SPORT LOUNGE API',
@@ -47,6 +47,30 @@ app.use('/api/dashboard', dashboardRouter);
 app.use('/api/liquids', liquidsRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/ai', aiRouter);
+
+// Serve static frontend assets if folder exists
+import path from 'path';
+import fs from 'fs';
+
+let frontendOut = path.join(__dirname, '../../frontend/out');
+if (!fs.existsSync(frontendOut)) {
+  frontendOut = path.join(__dirname, '../../../frontend/out');
+}
+
+if (fs.existsSync(frontendOut)) {
+  console.log(`[Server] Frontend out directory found at: ${frontendOut}`);
+  app.use(express.static(frontendOut));
+
+  // SPA support - serve index.html for all non-API paths
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api')) {
+      return next();
+    }
+    res.sendFile(path.join(frontendOut, 'index.html'));
+  });
+} else {
+  console.warn(`[Server] Warning: Frontend out folder not found at: ${frontendOut}`);
+}
 
 // Initialize Socket.IO
 initSocket(httpServer);

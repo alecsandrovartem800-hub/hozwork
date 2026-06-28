@@ -30,13 +30,50 @@ export async function requireAuth(req: any, res: Response, next: NextFunction) {
 router.get('/me', requireAuth, async (req: any, res: Response) => {
   try {
     const db = getSupabase();
-    const { data, error } = await db
+    let { data, error } = await db
       .from('users')
       .select('*')
       .eq('id', req.user.id)
-      .single();
+      .maybeSingle();
 
-    if (error) throw error;
+    if (!data) {
+      console.log(`[UsersRoute] Profile not found for ${req.user.id}, auto-creating...`);
+      const { data: newUser, error: insertError } = await db
+        .from('users')
+        .insert({
+          id: req.user.id,
+          email: req.user.email,
+          name: req.user.user_metadata?.full_name || req.user.user_metadata?.name || req.user.email?.split('@')[0] || 'Гость',
+          avatar: req.user.user_metadata?.avatar_url || null,
+          role: 'client',
+          total_orders: 0,
+          total_spent: 0
+        })
+        .select()
+        .maybeSingle();
+
+      if (insertError) {
+        console.error('[UsersMe] Failed to auto-create user profile:', insertError);
+      } else if (newUser) {
+        data = newUser;
+      }
+    }
+
+    if (error && !data) throw error;
+
+    // Fallback if db record creation still failed (e.g. database schema constraint issues)
+    if (!data) {
+      data = {
+        id: req.user.id,
+        email: req.user.email,
+        name: req.user.user_metadata?.full_name || req.user.user_metadata?.name || req.user.email?.split('@')[0] || 'Гость',
+        avatar: req.user.user_metadata?.avatar_url || null,
+        role: 'client',
+        total_orders: 0,
+        total_spent: 0
+      };
+    }
+
     res.json(data);
   } catch (e: any) {
     res.status(500).json({ error: e.message });

@@ -35,8 +35,16 @@ export default function ProfilePage() {
         setMixes(savedMixes);
       } catch (e) {
         console.error('Error fetching user profile data:', e);
+        // Fallback to basic session info
+        setUser({
+          ...session.user,
+          name: session.user.user_metadata?.full_name || session.user.user_metadata?.name || session.user.email?.split('@')[0] || 'Гость',
+          avatar: session.user.user_metadata?.avatar_url || null,
+          role: 'client',
+          total_orders: 0,
+          total_spent: 0
+        });
       } finally {
-        setUser(session.user);
         setLoading(false);
       }
     });

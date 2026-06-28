@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { supabase } from '@/lib/supabase';
+import { HookahIcon } from '@/components/ui/Icons';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -26,7 +27,7 @@ export default function LoginPage() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/profile`,
+          redirectTo: `${window.location.origin}/profile/`,
         },
       });
       if (error) throw error;
@@ -46,7 +47,9 @@ export default function LoginPage() {
 
         <div className="max-w-md w-full px-4 relative z-10 animate-fade-in">
           <div className="card p-8 text-center relative overflow-hidden" style={{ border: '1px solid rgba(212,165,116,0.15)' }}>
-            <span className="text-4xl block mb-4">🌿</span>
+            <div className="flex justify-center mb-6">
+              <HookahIcon size={44} color="var(--gold)" />
+            </div>
             <h1 className="text-3xl font-bold mb-2 text-gold-gradient" style={{ fontFamily: "'Playfair Display', serif" }}>
               SPORT LOUNGE
             </h1>

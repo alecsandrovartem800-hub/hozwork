@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
+import { SettingsIcon } from '@/components/ui/Icons';
 
 export default function CookieBanner() {
   const [visible, setVisible] = useState(false);
@@ -34,7 +35,7 @@ export default function CookieBanner() {
     <div className="fixed bottom-6 left-6 right-6 md:left-auto md:max-w-sm z-50 animate-slide-up">
       <div className="card p-5 glass shadow-2xl" style={{ border: '1px solid rgba(212,165,116,0.2)' }}>
         <div className="flex items-start gap-3">
-          <span className="text-xl">🍪</span>
+          <SettingsIcon size={20} color="var(--gold)" className="flex-shrink-0 mt-0.5" />
           <div className="flex-1">
             <h4 className="text-sm font-semibold mb-1" style={{ color: 'var(--gold-light)' }}>Мы используем cookies</h4>
             <p className="text-xs mb-3" style={{ color: 'var(--text-secondary)' }}>

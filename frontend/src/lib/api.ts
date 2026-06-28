@@ -1,4 +1,6 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_URL = typeof window !== 'undefined'
+  ? window.location.origin
+  : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001');
 
 async function request<T>(path: string, options?: RequestInit, token?: string): Promise<T> {
   const headers = new Headers(options?.headers);
